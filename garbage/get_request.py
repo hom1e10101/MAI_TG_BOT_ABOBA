@@ -2,7 +2,6 @@ import json
 import requests
 
 # Ваш API-ключ от Yandex Cloud
-# IAM_token = 't1.9euelZrMnYqTk8_Lxoqbj4yMmY3LyO3rnpWakY7LlpjMicmNlI2ZjM-ampbl8_c-HCNB-e8NBQ9Q_t3z935KIEH57w0FD1D-zef1656Vmo-cyZqJz8aOlYyTx4uWmJyX7_zF656Vmo-cyZqJz8aOlYyTx4uWmJyX.JMudOCcIla22YzP8DlAEkH2Ut78baKymjr9cVlVpQgl04nhL1vTOqzzb4oGuJHa0lQaf4aA3bttow3O2YWDxDA'
 API_Key = '<API_key>'
 
 # URL для запроса к Yandex GPT API
