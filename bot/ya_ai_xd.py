@@ -3,7 +3,7 @@ import json
 import os
 import requests
 from telebot.storage import StateMemoryStorage
-from shared_state import last_request
+from users_requests import get_db_connection, get_last_request
 apishka = os.environ.get('TELEGRAM_API_TOKEN', '7732717132:AAHPdgXQJGvWUzP2MaYpZQ7vxwyaQGEHv1s')
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
@@ -139,17 +139,13 @@ def handle_location(message):
 
     # Get user's last message if it wasn't "случайно"
     user_request = "случайно"  # Default search term
+    
     # Try to get user's last message from the chat history
-    global last_request
-    # last_request[user_id] = message.text
-    if (last_request[user_id] not in ['случайно', 'Случайно']):
-        user_request = last_request[user_id]
-    # with tb.retrieve_data(user_id, tb.get_me().id) as data:
-    #     print(f"че {data}")
-    #     if data and 'last_request' in data and data['last_request'] not in ['случайно', 'Случайно']:
-    #         user_request = data['last_request']
-    #         print(user_request, data['last_request'])
-    # print(f"обрабатываем {user_request}")
+    with get_db_connection() as conn:
+        user_request = get_last_request(conn, user_id)
+        if (user_request == None):
+            print("error with gettin last req")
+    
     # Status message to show user the request is being processed
     status_message = tb.send_message(user_id, f"🔍 Запрашиваю у YandexGPT информацию о местах по запросу '{user_request}'...")
     try:
