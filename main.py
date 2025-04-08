@@ -1,12 +1,11 @@
-
 import telebot
-import os
 from telebot.storage import StateMemoryStorage
 from funcs import start, help, place
 from ya_ai_xd import handle_location 
-from shared_state import last_request
+# from shared_state import last_request
 
-apishka = os.environ.get('TELEGRAM_API_TOKEN', '7732717132:AAHPdgXQJGvWUzP2MaYpZQ7vxwyaQGEHv1s')
+with open('huy_vam_a_ne_apishka_sini_blyadey.txt', 'r') as file:
+    apishka = file.readline()
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 tb.remove_webhook()
