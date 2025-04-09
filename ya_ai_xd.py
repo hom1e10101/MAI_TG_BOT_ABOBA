@@ -5,10 +5,11 @@ from telebot.storage import StateMemoryStorage
 from users_requests import get_db_connection, get_last_request
 
 with open('huy_vam_a_ne_apishka_sini_blyadey.txt', 'r') as file:
-    apishka = file.readline()
+    apishki = file.readlines()
+tgap = apishki[0]
 state_storage = StateMemoryStorage()
-tb = telebot.TeleBot(apishka, state_storage=state_storage)
-
+tb = telebot.TeleBot(tgap, state_storage=state_storage)
+apiya = apishki[1]
 
 def search_places_nearby(latitude,
                          longitude,
