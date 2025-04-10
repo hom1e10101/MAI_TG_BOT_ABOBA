@@ -49,7 +49,7 @@ def search_places_nearby(latitude,
   }}
   """
     url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
-    API_Key = '<APIkey>'
+    API_Key = apiya
     # Заголовки запроса
     headers = {
         'Authorization': f'Api-Key {API_Key}',
