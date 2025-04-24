@@ -23,7 +23,7 @@ def start(message):
   
   with get_db_connection() as conn:
     if user_in_base(conn, user_id) == 0:
-      add_user_to_base(conn, user_id, user_name)
+      add_user_to_base(conn, user_id, user_name, 'user')
 
 def help(message):
   '''Helps user to understand how it works | Помогает пользользователю понять как оно работает'''

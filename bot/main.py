@@ -1,10 +1,8 @@
-
 import telebot
 import os
 from telebot.storage import StateMemoryStorage
 from funcs import start, help, place
-from ya_ai_xd import handle_location 
-# from shared_state import last_request
+from ya_ai_xd import handle_location
 
 from secret import tg_api
 

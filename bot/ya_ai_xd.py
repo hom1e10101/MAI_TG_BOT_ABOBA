@@ -13,6 +13,9 @@ apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 
+from places_requests import add_place_to_base
+from places_requests import place_in_base
+from places_requests import get_places_db_connection
 
 def search_places_nearby(latitude, longitude, place_type=None, keyword=None, radius=1000):
     '''Sends request to YAgpt to search for places nearby | Отправляет запрос Ягпт для поиска мест рядом'''
@@ -21,7 +24,7 @@ def search_places_nearby(latitude, longitude, place_type=None, keyword=None, rad
   For each place, provide:
   1. Name of the place
   2. Brief description
-  3. address
+  3. address (в формате ул.<название улицы>, д.<номер дома>)
   4. Category (museum, restaurant, park, etc.)
 
   Format the response as a JSON with this structure:
@@ -31,6 +34,8 @@ def search_places_nearby(latitude, longitude, place_type=None, keyword=None, rad
         "properties": {{
           "name": "Place Name",
           "address": "Place Address",
+          "metro": "metro station",
+          "city": "Place city",
           "description": "Place description",
           "CompanyMetaData": {{
             "Categories": [
@@ -163,6 +168,8 @@ def handle_location(message):
                 properties = place.get('properties', {})
                 name = properties.get('name', 'Неизвестное место')
                 address = properties.get('address', 'Адрес не указан')
+                metro = properties.get('metro', 'Адрес не указан')
+                city = properties.get('city', 'Адрес не указан')
                 description = properties.get('description', 'Адрес не указан')
                 # Get coordinates from the response
                 coordinates = place.get('geometry', {}).get('coordinates', [])
@@ -177,9 +184,16 @@ def handle_location(message):
                 category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
                 response_text += f"🏙️ {i}. *{name}*\n"
                 response_text += f"   📍 Адрес: {address}\n"
+                response_text += f"   🚇 Станция Метро: {metro}\n"
                 response_text += f"   🔖 Категория: {category_name}\n"
                 response_text += f"   🧐 Описание: {description}\n"
                 response_text += f"   🗺️ [Открыть на OpenStreetMap]({maps_url})\n\n"
+
+                # add place to base
+                with get_places_db_connection() as conn:
+                  if place_in_base(conn, name, city, address) == 0:
+                    add_place_to_base(conn, name, city, address)
+
             # Delete the status message
             tb.delete_message(user_id, status_message.message_id)
             # Send the results

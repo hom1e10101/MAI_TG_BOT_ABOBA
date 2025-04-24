@@ -41,7 +41,6 @@ def get_last_request(connection: sqlite3.Connection, id):
     """, (id,))
     
     result = users.fetchone()
-    
-    print(result[0])
+    # print(result[0])
     
     return result[0] if result else None
