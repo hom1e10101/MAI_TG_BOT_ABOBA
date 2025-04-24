@@ -4,7 +4,12 @@ import os
 import requests
 from telebot.storage import StateMemoryStorage
 from users_requests import get_db_connection, get_last_request
-apishka = os.environ.get('TELEGRAM_API_TOKEN', '7732717132:AAHPdgXQJGvWUzP2MaYpZQ7vxwyaQGEHv1s')
+
+from secret import yandex_url
+from secret import yandex_api
+
+from secret import tg_api
+apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 
@@ -42,8 +47,8 @@ def search_places_nearby(latitude, longitude, place_type=None, keyword=None, rad
     ]
   }}
   """
-    url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
-    API_Key = '<APIkey>'
+    url = yandex_url
+    API_Key = yandex_api
   # Заголовки запроса
     headers = {
       'Authorization': f'Api-Key {API_Key}',

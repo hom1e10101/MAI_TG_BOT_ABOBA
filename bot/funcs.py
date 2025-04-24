@@ -9,7 +9,8 @@ from telebot.storage import StateMemoryStorage
 from users_requests import get_db_connection, user_in_base, add_user_to_base, upd_last_request
 
 # from shared_state import last_request
-apishka = os.environ.get('TELEGRAM_API_TOKEN', '7732717132:AAHPdgXQJGvWUzP2MaYpZQ7vxwyaQGEHv1s')
+from secret import tg_api
+apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 

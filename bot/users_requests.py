@@ -1,8 +1,8 @@
 import sqlite3
 from contextlib import contextmanager
 
-
-database = r'D:\codes\database\users.db'
+from secret import users_db
+database = users_db
 
 @contextmanager
 def get_db_connection():
