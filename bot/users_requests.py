@@ -1,8 +1,8 @@
 import sqlite3
 from contextlib import contextmanager
 
-from secret import users_db
-database = users_db
+from secret import database
+# database = users_db
 
 @contextmanager
 def get_db_connection():
@@ -15,7 +15,7 @@ def get_db_connection():
 
 def user_in_base(connection: sqlite3.Connection, id):
     users = connection.cursor()
-    users.execute('SELECT EXISTS(SELECT 1 FROM users WHERE user_id = ?)', (id,))
+    users.execute('SELECT EXISTS(SELECT 1 FROM Users WHERE user_id = ?)', (id,))
     exists = users.fetchone()[0] == 1
     return exists
 
@@ -27,7 +27,7 @@ def add_user_to_base(connection: sqlite3.Connection, id, name, role):
 def upd_last_request(connection: sqlite3.Connection, id, last_request):
     users = connection.cursor()
     users.execute(
-        "UPDATE users SET last_request = ? WHERE user_id = ?",
+        "UPDATE Users SET last_request = ? WHERE user_id = ?",
         (last_request, id)
     )
     connection.commit()
@@ -36,7 +36,7 @@ def get_last_request(connection: sqlite3.Connection, id):
     users = connection.cursor()
     users.execute("""
         SELECT last_request 
-        FROM users 
+        FROM Users 
         WHERE user_id = ?
     """, (id,))
     

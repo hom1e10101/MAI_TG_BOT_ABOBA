@@ -1,8 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 
-from secret import places_db
-database = places_db
+from secret import database
 
 @contextmanager
 def get_places_db_connection():
@@ -15,7 +14,7 @@ def get_places_db_connection():
 
 def get_address_by_name(connection: sqlite3.Connection, name):
     places = connection.cursor()
-    query = "SELECT adress FROM places WHERE name = ?"
+    query = "SELECT address FROM places WHERE name = ?"
     places.execute(query, (name,))
     result = places.fetchone()
     
@@ -44,7 +43,7 @@ def place_in_base(connection: sqlite3.Connection, name, city, address):
             return 1
     return 0
     
-def add_place_to_base(connection: sqlite3.Connection, name, city, adress):
+def add_place_to_base(connection: sqlite3.Connection, name, city, address):
     places = connection.cursor()
-    places.execute('INSERT INTO places (name, city, adress) VALUES (?, ?, ?)', (name, city, adress))
+    places.execute('INSERT INTO places (name, city, address) VALUES (?, ?, ?)', (name, city, address))
     connection.commit()
