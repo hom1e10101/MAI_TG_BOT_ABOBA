@@ -12,37 +12,33 @@ def get_places_db_connection():
     finally:
         connection.close()
 
+# получаем адресс по названию места
 def get_address_by_name(connection: sqlite3.Connection, name):
     places = connection.cursor()
     query = "SELECT address FROM places WHERE name = ?"
     places.execute(query, (name,))
     result = places.fetchone()
-    
-    print(result[0])
     return result[0] if result else None
 
+# получаем город места по названию
 def get_city_by_name(connection: sqlite3.Connection, name):
     places = connection.cursor()
     query = "SELECT city FROM places WHERE name = ?"
     places.execute(query, (name,))
     result = places.fetchone()
-    
-    print(f'city is {result[0]}')
     return result[0] if result else None
 
-
+# получаем True/False если место уже есть в БД
 def place_in_base(connection: sqlite3.Connection, name, city, address):
     places = connection.cursor()
     places.execute('SELECT EXISTS(SELECT 1 FROM places WHERE name = ?)', (name,))
     exists = places.fetchone()[0] == 1
-    # print(get_city_by_name(connection, name), city)
-    # print(name, get_address_by_name(connection, name), address)
     if (exists) :
         if get_city_by_name(connection, name) == city and get_address_by_name(connection, name) == address:
-            print("norm")
             return 1
     return 0
-    
+
+# добавляем место в БД по имени и адрессу
 def add_place_to_base(connection: sqlite3.Connection, name, city, address):
     places = connection.cursor()
     places.execute('INSERT INTO places (name, city, address) VALUES (?, ?, ?)', (name, city, address))

@@ -137,19 +137,23 @@ def create_fallback_data(latitude, longitude, keyword):
   }
 
 @tb.message_handler(content_types=['location'])
-def handle_location(message):
+def handle_location(message, prev_message):
     '''Gets location of user for use | Получает местоположение пользователя для использования'''
     user_id = message.from_user.id
     user_name = message.from_user.first_name
     latitude = message.location.latitude
     longitude = message.location.longitude
 
-    tb.send_message(user_id, f"Спасибо, {user_name}! Получил ваши координаты: {latitude}, {longitude}")
-    tb.send_message(user_id, "YandexGPT анализирует данные и ищет интересные места поблизости...")
+    #tb.edit_message_text(f"Спасибо, {user_name}! Получил ваши координаты: {latitude}, {longitude}"user_id )#nahuy
+    tb.edit_message_text("YandexGPT анализирует данные и ищет интересные места поблизости...", chat_id=message.chat.id, message_id=prev_message.message_id)
 
     # Get user's last message if it wasn't "случайно"
     user_request = "случайно"  # Default search term
-    
+
+
+    tb.delete_message(user_id, message.message_id)
+
+
     # Try to get user's last message from the chat history
     with get_db_connection() as conn:
         user_request = get_last_request(conn, user_id)
@@ -157,7 +161,9 @@ def handle_location(message):
             print("error with gettin last req")
     
     # Status message to show user the request is being processed
-    status_message = tb.send_message(user_id, f"🔍 Запрашиваю у YandexGPT информацию о местах по запросу '{user_request}'...")
+    # status_message = tb.send_message(user_id, f"🔍 Запрашиваю у YandexGPT информацию о местах по запросу '{user_request}'...")
+    
+    tb.edit_message_text(f"🔍 Запрашиваю у YandexGPT информацию о местах по запросу '{user_request}'...", chat_id=message.chat.id, message_id=prev_message.message_id)
     try:
         # Search for places based on the user's request using YandexGPT
         places_result = search_places_nearby(latitude, longitude, keyword=user_request)
@@ -195,12 +201,12 @@ def handle_location(message):
                     add_place_to_base(conn, name, city, address)
 
             # Delete the status message
-            tb.delete_message(user_id, status_message.message_id)
+            # tb.delete_message(user_id, status_message.message_id)
             # Send the results
-            tb.send_message(user_id, response_text, parse_mode="Markdown", disable_web_page_preview=True)
+            tb.edit_message_text(response_text, chat_id=message.chat.id, message_id=prev_message.message_id, parse_mode="Markdown", disable_web_page_preview=True)
         else:
-            tb.delete_message(user_id, status_message.message_id)
+            # tb.delete_message(user_id, status_message.message_id)
             tb.send_message(user_id, f"❌ YandexGPT не смог найти места рядом с вами по запросу '{user_request}'. Попробуйте другой запрос.")
     except Exception as e:
-        tb.delete_message(user_id, status_message.message_id)
+        # tb.delete_message(user_id, status_message.message_id)
         tb.send_message(user_id, f"❌ Произошла ошибка при поиске мест: {str(e)}. Пожалуйста, попробуйте еще раз.")

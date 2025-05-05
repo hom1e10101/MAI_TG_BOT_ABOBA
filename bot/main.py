@@ -11,20 +11,23 @@ state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 tb.remove_webhook()
 
+global sent_message
+
 @tb.message_handler(commands=['start'])
 def start_handler(message):
-    start(message)
+    global sent_message
+    sent_message = start(message)
 
 @tb.message_handler(commands=['help'])
 def help_handler(message):
-    help(message)
+    help(message, sent_message)
 
 @tb.message_handler()
 def message_handler(message):
-    place(message)
+    place(message, sent_message)
 
 @tb.message_handler(content_types=['location'])
 def location_handler(message):
-    handle_location(message)
+    handle_location(message, sent_message)
 
 tb.infinity_polling()

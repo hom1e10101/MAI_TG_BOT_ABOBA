@@ -13,7 +13,7 @@ def get_db_connection():
         connection.close()
 
 '''обращения к таблице'''
-# комментировали ли это место раньше
+# комментировали ли это место раньше True/False
 def commented(connection: sqlite3.Connection, place_id):
     cursor = connection.cursor()
     cursor.execute('SELECT comment_id FROM Comments WHERE place_id = ?', (place_id,))
