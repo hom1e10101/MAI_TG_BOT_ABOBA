@@ -29,7 +29,7 @@ def help(message):
   '''Helps user to understand how it works | Помогает пользользователю понять как оно работает'''
   user_id = message.from_user.id
   user_name = message.from_user.first_name
-  tb.send_message(user_id, 'Напиши место, которое тебя интересует или напиши "случайно", чтобы получить случайное место')
+  tb.edit_message_text('Напиши место, которое тебя интересует или напиши "случайно", чтобы получить случайное место', chat_id=message.chat.id, message_id=sent_message.message_id)
 
 def place(message):
   '''Gets user's request for place | Получает запрос пользователя на место'''
@@ -40,11 +40,11 @@ def place(message):
     upd_last_request(conn, user_id, message.text)
 
   if message.text == 'случайно' or message.text == 'Случайно':
-    tb.send_message(user_id, 'не, чет не хочу пока')
+    tb.edit_message_text('не, чет не хочу пока', chat_id=message.chat.id, message_id=sent_message.message_id)
   else:
-    tb.send_message(user_id, f'Ищем места по запросу: {message.text}')
+    tb.send_message(user_id, f'Ищем места по запросу: {message.text}', chat_id=message.chat.id, message_id=sent_message.message_id)
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button = KeyboardButton("Отправить геолокацию", request_location=True)
     markup.add(button)
-    tb.send_message(user_id, "Пожалуйста, поделитесь своим местоположением:", reply_markup=markup)
+    tb.edit_message_text(user_id, "Пожалуйста, поделитесь своим местоположением:", chat_id=message.chat.id, message_id=sent_message.message_id, reply_markup=markup)
 
