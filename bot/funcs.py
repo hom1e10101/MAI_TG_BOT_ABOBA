@@ -18,7 +18,6 @@ def start(message):
   '''Sends start message | Отправляет стартовое сообщение'''
   user_id = message.from_user.id
   user_name = message.from_user.first_name
-  tb.delete_message(user_id, message.message_id)
   
   with get_db_connection() as conn:
     if user_in_base(conn, user_id) == 0:
@@ -50,4 +49,5 @@ def place(message, prev_message):
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     button = KeyboardButton("Отправить геолокацию", request_location=True)
     markup.add(button)
-    tb.edit_message_text("Пожалуйста, поделитесь своим местоположением:", chat_id=message.chat.id, message_id=prev_message.message_id)
+    tb.send_message(user_id, "Пожалуйста, поделитесь своим местоположением:", reply_markup=markup)
+    
