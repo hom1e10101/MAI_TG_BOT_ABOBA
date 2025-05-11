@@ -30,8 +30,10 @@
 ## Демонстрация нашего проекта
 
 ## Платформы, где представлены наши результаты:
-<img src="https://github.com/user-attachments/assets/f66c0874-dea2-410c-9e73-3c02447fbdd3" width="200" height="200">
-<img src="https://github.com/user-attachments/assets/d7c60700-59d3-41f8-94b9-7e5c9cdadf83" width="200" height="200">
+<img src="https://github.com/user-attachments/assets/6b9f41e3-1749-46b2-be42-5e672eb6da24" width="220" height="230">
+
+<img src="https://github.com/user-attachments/assets/26ea43e5-605e-46fa-bf08-c9007b8bbe03" width="220" height="230">
+
 
 
 
