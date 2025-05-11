@@ -51,7 +51,7 @@
 
 
 ## ⚙️ Технологический стек
-![image](https://github.com/user-attachments/assets/66c8234b-c2a7-42f4-b18d-d51584ebc0bf)
+<img src="https://camo.githubusercontent.com/d2080d24775bd0fd90b63e3bfd6d2e6b14a83bb5a79b051f83105abcaa0f4d1a/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f507974686f6e2d3337373641423f7374796c653d666c61742d737175617265266c6f676f3d707974686f6e266c6f676f436f6c6f723d7768697465">
 
 ## 🌐 Ссылки на ресурсы:
 <img src="https://i.pinimg.com/736x/3f/d1/27/3fd127cad6d7b981b9743b43f5c7820d.jpg">
