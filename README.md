@@ -25,10 +25,12 @@
 
 
 ## ⚙️ Технологический стек
+![image](https://github.com/user-attachments/assets/66c8234b-c2a7-42f4-b18d-d51584ebc0bf)
 
 ## 🌐 Ссылки на ресурсы:
 
 ## ✅ Демонстрация нашего проекта
+![image](https://github.com/user-attachments/assets/a0b30ce6-1500-4bd9-ae78-3756a338ce8e)
 
 ## 👀 Платформы, где представлены наши результаты:
 <img src="https://github.com/user-attachments/assets/6b9f41e3-1749-46b2-be42-5e672eb6da24" width="220" height="230">ㅤㅤㅤㅤㅤ<img src="https://github.com/user-attachments/assets/26ea43e5-605e-46fa-bf08-c9007b8bbe03" width="220" height="230">
