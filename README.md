@@ -31,7 +31,7 @@
 
 ## Платформы, где представлены наши результаты:
 <img src="https://github.com/user-attachments/assets/f66c0874-dea2-410c-9e73-3c02447fbdd3" width="200" height="200">
-
+<img src="https://github.com/user-attachments/assets/d7c60700-59d3-41f8-94b9-7e5c9cdadf83" width="200" height="200">
 
 
 
