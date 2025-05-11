@@ -48,7 +48,12 @@
 | тут бувы | еще буквы | 99$ |
 | любая порция |  кофе| 69 ¢ |
 | Надпись на курточке | ~~пизда~~ | xdxd |
+| github |  дай писать маты | пж |
+| бот |  написан | на yoptaskript|
+<img src="https://github.com/user-attachments/assets/916b2837-0dd6-4dd4-8cba-dc571973e547" width="900" height="500">
 
+
+<img src="https://github.com/user-attachments/assets/5b993456-dd7b-43aa-8d3a-291b6df5b674" width="600" height="400">
 
 ## ⚙️ Технологический стек
 <img src="https://camo.githubusercontent.com/d2080d24775bd0fd90b63e3bfd6d2e6b14a83bb5a79b051f83105abcaa0f4d1a/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f507974686f6e2d3337373641423f7374796c653d666c61742d737175617265266c6f676f3d707974686f6e266c6f676f436f6c6f723d7768697465">
@@ -61,6 +66,7 @@
 
 ## 👀 Платформы, где представлены наши результаты:
 <img src="https://github.com/user-attachments/assets/6b9f41e3-1749-46b2-be42-5e672eb6da24" width="220" height="230">ㅤㅤㅤㅤㅤ<img src="https://github.com/user-attachments/assets/26ea43e5-605e-46fa-bf08-c9007b8bbe03" width="220" height="230">
+
 
 
 
