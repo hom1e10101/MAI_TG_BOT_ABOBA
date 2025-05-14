@@ -5,7 +5,7 @@
 
 1. **Фокина Татьяна** - _Team Lead & Analyst & Miro Maps Designer_
 2. **Балдынов Тамир** - _Backend Developer_
-3. **Меньшиков Алексей** - _Based Backend Developer, Warframe enjoyer, factorio builder, content maker, funny guy, funny guy from family guy, the man behind the slaughter, ⠏⠗⠕⠏⠁⠝⠑_
+3. **Меньшиков Алексей** - _Based Backend Developer, Warframe enjoyer, factorio builder, content maker, funny guy, funny guy from family guy, the man behind the slaughter, ⠏⠗⠕⠏⠁⠝⠑, Å̶̠͙͇͈̀̉͂͆̐͘̚͡Ṟ̴̙̲̗́̉͋́̐̉̌̅͠͝͝͝͠Ḃ̷̯͓̬̞̀͜͝ͅŲ̶͕͇̼̎̌̅̄͗́̕͟Z̶̠̤̔̄̔̔̐͗͆́̎͌̕̚͟͝͝_
 4. **Кучин Клим** - _Presentation Designer_
 
 ---
