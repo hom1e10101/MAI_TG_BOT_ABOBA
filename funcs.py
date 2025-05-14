@@ -50,4 +50,26 @@ def place(message, prev_message):
     button = KeyboardButton("Отправить геолокацию", request_location=True)
     markup.add(button)
     tb.send_message(user_id, "Пожалуйста, поделитесь своим местоположением:", reply_markup=markup)
-    
+
+def user_settings(message):
+
+  #получить из бд настройки пользователя, в случае отсуствия, занести дефоль
+  user_id = message.from_user.id
+  user_name = message.from_user.first_name
+  tb.delete_message(user_id, message.id)
+  markup = InlineKeyboardMarkup()
+  markup.row_width = 4
+  markup.add(InlineKeyboardButton("Расстояние поиска", callback_data="distance"),
+             InlineKeyboardButton("Мои оценки", callback_data="rating"),
+             InlineKeyboardButton("Мои комментарии", callback_data="comments")) #поменять все на эмодзи + сделать действия
+  tb.send_message(user_id, "Тут ты можешь изменить расстояние поиска мест и посмотреть свои оценки и комментарии", reply_markup=markup)
+
+  def operator(call):
+    user_id = call.from_user.id
+    if call.data == "distance":
+      tb.send_message(user_id, "Напиши желаемое расстояние поиска цифрой в километрах или название города")
+      #реализуй try except для того чтобы узнать расстояние / город
+    if call.data == "rating":
+      tb.send_message(user_id, "ВАНЕЧКИН, ДВА!!!")
+    if call.data == "comments":
+      tb.send_message(user_id, "МАШИНА ПОЛОЖИ БАНКОМАТ!!!!")

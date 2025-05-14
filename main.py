@@ -1,7 +1,7 @@
 import telebot
 import os
 from telebot.storage import StateMemoryStorage
-from funcs import start, help, place
+from funcs import start, help, place, user_settings, operator
 from ya_ai_xd import handle_location
 
 from secret import tg_api
@@ -22,14 +22,21 @@ def start_handler(message):
 def help_handler(message):
     help(message, sent_message)
 
+@tb.message_handler(commands=['settings'])
+def settings_handler(message):
+    user_settings(message)
+
 @tb.message_handler()
 def message_handler(message):
-    global todelmid
-    todelmid = place(message, sent_message)
+    place(message, sent_message)
 
 
 @tb.message_handler(content_types=['location'])
 def location_handler(message):
     handle_location(message, sent_message)
+
+@tb.callback_query_handler(func=lambda call: True)
+def perehodnik(call):
+    operator(call)
 
 tb.infinity_polling()
