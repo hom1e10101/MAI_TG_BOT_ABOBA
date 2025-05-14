@@ -67,6 +67,18 @@
 ## ✅ Демонстрация нашего проекта
 ![image](https://github.com/user-attachments/assets/a0b30ce6-1500-4bd9-ae78-3756a338ce8e)
 
+
+https://github.com/user-attachments/assets/2e209323-917f-4e7e-b68d-a210335ca433
+
+
+
+https://github.com/user-attachments/assets/fd828551-ab89-48c8-ba4b-49ba40bf3d7d
+
+
+
+https://github.com/user-attachments/assets/b903f7b9-0988-46a9-aba5-f525659378fd
+
+
 ## 👀 Платформы, где представлены наши результаты:
 <img src="https://github.com/user-attachments/assets/6b9f41e3-1749-46b2-be42-5e672eb6da24" width="220" height="230">ㅤㅤㅤㅤㅤ<img src="https://github.com/user-attachments/assets/26ea43e5-605e-46fa-bf08-c9007b8bbe03" width="220" height="230">
 
