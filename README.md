@@ -55,22 +55,17 @@
 
 <img src="https://github.com/user-attachments/assets/5b993456-dd7b-43aa-8d3a-291b6df5b674" width="600" height="400">
 <img src="https://avatars.mds.yandex.net/i?id=1e1ea5699987f0bed1b5e39201755838_l-9068872-images-thumbs&n=13" width="600" height="400">
-## ⚙️ Технологический стек
-<img src="https://camo.githubusercontent.com/d2080d24775bd0fd90b63e3bfd6d2e6b14a83bb5a79b051f83105abcaa0f4d1a/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f507974686f6e2d3337373641423f7374796c653d666c61742d737175617265266c6f676f3d707974686f6e266c6f676f436f6c6f723d7768697465">
 
+
+## ⚙️ Технологический стек:
+<a href="https://github.com/"><img src="https://github.com/user-attachments/assets/caac4bbf-74e3-485d-8e1b-161562b2f0d6" width="80" height="30"></a><a href="https://code.visualstudio.com/"><img src="https://avatars.mds.yandex.net/i?id=8655a72f8c70ebba0feeef2acc5f6741_l-10122654-images-thumbs&n=13" width="60" height="40"></a><a href="https://www.python.org/"><img src="https://img1.akspic.ru/attachments/originals/4/9/3/3/6/163394-programmist_na_python-piton-algoritmicheskij_yazyk-stoyanie-ishodnyj_kod-3840x2160.png" width="66" height="40"></a><a href="https://ya.ru/ai/gpt"><img src="https://static.tengrinews.kz/userdata/news/2023/news_519361/thumb_b/photo_454258.jpeg" width="80" height="40"></a><a href="https://web.telegram.org/"><img src="https://keaz.ru/img/tg.png" width="66" height="40"></a>
 
 
 ## 🌐 Ссылки на ресурсы:
 <a href="https://ru.yougile.com/board/6t8fc2a2cdbi">
-  <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22">
-</a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi
+  <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22"></a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ<a href="https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885">
+  <img src="https://ugc.production.linktr.ee/dbe645a3-9c9a-432c-8629-8674ad649964_c77dc9c2-a0c6-41ab-9e54-265339f5339c-og-image.png?io=true&size=thumbnail-stack-v1_0" width="22" height="22"></a> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
 
-
-  <img src="https://ugc.production.linktr.ee/dbe645a3-9c9a-432c-8629-8674ad649964_c77dc9c2-a0c6-41ab-9e54-265339f5339c-og-image.png?io=true&size=thumbnail-stack-v1_0" width="22" height="22"> </a> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
-  <a href="https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885">
-
-
-  
 <img src="https://i.pinimg.com/736x/3f/d1/27/3fd127cad6d7b981b9743b43f5c7820d.jpg">
 
 ## ✅ Демонстрация нашего проекта
