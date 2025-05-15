@@ -62,6 +62,11 @@
 
 
 ## 🌐 Ссылки на ресурсы:
+<img src="https://github.com/nimelnikova/BIGGS_WEB_TAXI_python/blob/main/static/icons/miro-2.png?raw=true"> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
+
+<a href="https://ru.yougile.com/board/6t8fc2a2cdbi">
+  <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22">
+</a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi
 <img src="https://i.pinimg.com/736x/3f/d1/27/3fd127cad6d7b981b9743b43f5c7820d.jpg">
 
 ## ✅ Демонстрация нашего проекта
