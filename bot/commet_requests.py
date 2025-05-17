@@ -32,10 +32,10 @@ def get_user_comment_ids(connection: sqlite3.Connection, user_id):
     return [row[0] for row in cursor.fetchall()]
 
 # возвращаем список id комментов на место
-def get_place_comment_ids(connection: sqlite3.Connection, place_id):
-    cursor = connection.cursor()
-    cursor.execute('SELECT comment_id FROM Comments WHERE place_id = ?', (place_id,))
-    return [row[0] for row in cursor.fetchall()]
+# def get_place_comment_ids(connection: sqlite3.Connection, place_id):
+#     cursor = connection.cursor()
+#     cursor.execute('SELECT comment_id FROM Comments WHERE place_id = ?', (place_id,))
+#     return [row[0] for row in cursor.fetchall()]
 
 # возвращаем true если юзер комментил данное место
 def commented_by_user(connection: sqlite3.Connection, user_id, place_id):

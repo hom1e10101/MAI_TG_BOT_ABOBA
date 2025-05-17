@@ -15,7 +15,7 @@ def get_places_db_connection():
 # получаем адресс по названию места
 def get_address_by_name(connection: sqlite3.Connection, name):
     places = connection.cursor()
-    query = "SELECT address FROM places WHERE name = ?"
+    query = "SELECT address FROM Places WHERE name = ?"
     places.execute(query, (name,))
     result = places.fetchone()
     return result[0] if result else None
@@ -23,7 +23,7 @@ def get_address_by_name(connection: sqlite3.Connection, name):
 # получаем город места по названию
 def get_city_by_name(connection: sqlite3.Connection, name):
     places = connection.cursor()
-    query = "SELECT city FROM places WHERE name = ?"
+    query = "SELECT city FROM Places WHERE name = ?"
     places.execute(query, (name,))
     result = places.fetchone()
     return result[0] if result else None
@@ -31,7 +31,7 @@ def get_city_by_name(connection: sqlite3.Connection, name):
 # получаем True/False если место уже есть в БД
 def place_in_base(connection: sqlite3.Connection, name, city, address):
     places = connection.cursor()
-    places.execute('SELECT EXISTS(SELECT 1 FROM places WHERE name = ?)', (name,))
+    places.execute('SELECT EXISTS(SELECT 1 FROM Places WHERE name = ?)', (name,))
     exists = places.fetchone()[0] == 1
     if (exists) :
         if get_city_by_name(connection, name) == city and get_address_by_name(connection, name) == address:
@@ -41,5 +41,5 @@ def place_in_base(connection: sqlite3.Connection, name, city, address):
 # добавляем место в БД по имени и адрессу
 def add_place_to_base(connection: sqlite3.Connection, name, city, address):
     places = connection.cursor()
-    places.execute('INSERT INTO places (name, city, address) VALUES (?, ?, ?)', (name, city, address))
+    places.execute('INSERT INTO Places (name, city, address) VALUES (?, ?, ?)', (name, city, address))
     connection.commit()
