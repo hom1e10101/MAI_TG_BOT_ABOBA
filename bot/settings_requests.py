@@ -109,3 +109,26 @@ def get_user_last_request(connection: sqlite3.Connection, user_id):
     
     result = users.fetchone()
     return result[0] if result else None
+
+
+
+# обновляем последний запрос юзера
+def upd_user_status(connection: sqlite3.Connection, user_id, status):
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE Settings SET status = ? WHERE user_id = ?",
+        (status, user_id)
+    )
+    connection.commit()
+
+# получаем последний запрос пользователя
+def get_user_status(connection: sqlite3.Connection, user_id):
+    users = connection.cursor()
+    users.execute("""
+        SELECT status 
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    result = users.fetchone()
+    return result[0] if result else None

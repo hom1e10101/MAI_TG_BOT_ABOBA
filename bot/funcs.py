@@ -9,6 +9,7 @@ from telebot.storage import StateMemoryStorage
 from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role 
 
 from settings_requests import add_user_settings, get_user_message_to_edit, upd_user_message_to_edit, get_user_city, upd_user_city, get_user_distance, upd_user_distance, get_user_last_request, upd_user_last_request
+from settings_requests import upd_user_status, get_user_status
 
 from secret import tg_api
 apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
@@ -82,9 +83,15 @@ def user_settings(message):
 def operator(call):
     user_id = call.from_user.id
     if call.data == "distance":
+        with get_db_connection as conn:
+            upd_user_status('distance')
         tb.send_message(user_id, "Напиши желаемое расстояние поиска цифрой в километрах или название города")
         #реализуй try except для того чтобы узнать расстояние / город
     if call.data == "rating":
+        with get_db_connection as conn:
+            upd_user_status('rating')
         tb.send_message(user_id, "ВАНЕЧКИН, ДВА!!!")
     if call.data == "comments":
+        with get_db_connection as conn:
+            upd_user_status('comments')
         tb.send_message(user_id, "МАШИНА ПОЛОЖИ БАНКОМАТ!!!!")

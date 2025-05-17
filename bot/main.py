@@ -3,6 +3,7 @@ import os
 from telebot.storage import StateMemoryStorage
 from funcs import start, help, place, user_settings, operator
 from ya_ai_xd import handle_location
+from settings_requests import get_db_connection, get_user_status, upd_user_status
 
 from secret import tg_api
 
@@ -25,7 +26,14 @@ def settings_handler(message):
 
 @tb.message_handler()
 def message_handler(message):
-    place(message)
+    status = ''
+    user_id = message.from_user.id
+    with get_db_connection() as conn:
+        status = get_user_status(user_id)
+    
+    if status == "place_search":
+        place(message)
+    
 
 
 @tb.message_handler(content_types=['location'])
