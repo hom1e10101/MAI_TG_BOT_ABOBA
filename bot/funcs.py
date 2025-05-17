@@ -11,6 +11,8 @@ from users_requests import get_db_connection, add_user_to_base, upd_user_name, g
 from settings_requests import add_user_settings, get_user_message_to_edit, upd_user_message_to_edit, get_user_city, upd_user_city, get_user_distance, upd_user_distance, get_user_last_request, upd_user_last_request
 from settings_requests import upd_user_status, get_user_status
 
+from commet_requests import add_comment
+
 from secret import tg_api
 apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
@@ -84,14 +86,34 @@ def operator(call):
     user_id = call.from_user.id
     if call.data == "distance":
         with get_db_connection as conn:
-            upd_user_status('distance')
-        tb.send_message(user_id, "Напиши желаемое расстояние поиска цифрой в километрах или название города")
+            upd_user_status(conn, 'distance')
+        tb.send_message(user_id, "Напиши желаемое расстояние поиска числом в километрах или название города")
         #реализуй try except для того чтобы узнать расстояние / город
     if call.data == "rating":
         with get_db_connection as conn:
-            upd_user_status('rating')
-        tb.send_message(user_id, "ВАНЕЧКИН, ДВА!!!")
+            upd_user_status(conn, 'rating')
+        tb.send_message(user_id, "Напиши оценку, которую хочешь поставить месту от 1 до 10")
     if call.data == "comments":
         with get_db_connection as conn:
-            upd_user_status('comments')
+            upd_user_status(conn, 'comments')
         tb.send_message(user_id, "МАШИНА ПОЛОЖИ БАНКОМАТ!!!!")
+
+def change_distance(message):
+    if message.isdigit():
+        print(int(message))
+        with get_db_connection as conn:
+            upd_user_distance(int(conn, message))
+    else:
+        with get_db_connection as conn:
+            upd_user_city(conn, message)
+    with get_db_connection as conn:
+        upd_user_status(conn, 'start')
+
+def set_rating(message, place_id):
+    user_id = message.from_user.id
+    if message.isdigit():
+        print(int(message))
+        with get_db_connection as conn:
+            add_comment(conn, user_id, place_id, "NULL", int(conn, message))
+    else:
+        print('needed to do try exept')

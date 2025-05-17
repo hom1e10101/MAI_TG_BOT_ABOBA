@@ -1,7 +1,7 @@
 import telebot
 import os
 from telebot.storage import StateMemoryStorage
-from funcs import start, help, place, user_settings, operator
+from funcs import start, help, place, user_settings, operator, change_distance
 from ya_ai_xd import handle_location
 from settings_requests import get_db_connection, get_user_status, upd_user_status
 
@@ -31,10 +31,12 @@ def message_handler(message):
     with get_db_connection() as conn:
         status = get_user_status(user_id)
     
-    if status == "place_search":
+    if status == "start":
         place(message)
-    
-
+    elif status == "distance":
+        change_distance(message)
+    elif status == "comments":
+        
 
 @tb.message_handler(content_types=['location'])
 def location_handler(message):
