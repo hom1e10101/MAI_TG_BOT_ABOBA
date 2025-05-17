@@ -3,12 +3,18 @@ import json
 import os
 import requests
 from telebot.storage import StateMemoryStorage
-from users_requests import get_db_connection, get_last_request
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role
+
+from settings_requests import get_user_message_to_edit, upd_user_message_to_edit, get_user_city, upd_user_city, \
+    get_user_distance, upd_user_distance, get_user_last_request, upd_user_last_request
 
 from secret import yandex_url
 from secret import yandex_api
 
 from secret import tg_api
+
 apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
@@ -17,133 +23,141 @@ from places_requests import add_place_to_base
 from places_requests import place_in_base
 from places_requests import get_places_db_connection
 
-def search_places_nearby(latitude, longitude, place_type=None, keyword=None, radius=1000):
-    '''Sends request to YAgpt to search for places nearby | Отправляет запрос Ягпт для поиска мест рядом'''
-    prompt = f"""Given the coordinates (latitude: {latitude}, longitude: {longitude}), 
-  suggest 5 interesting places nearby (in the area of 5km) that match '{keyword}'.
-  For each place, provide:
-  1. Name of the place
-  2. Brief description
-  3. address (в формате ул.<название улицы>, д.<номер дома>)
-  4. Category (museum, restaurant, park, etc.)
 
-  Format the response as a JSON with this structure:
-  {{
-    "features": [
-      {{
-        "properties": {{
-          "name": "Place Name",
-          "address": "Place Address",
-          "metro": "metro station",
-          "city": "Place city",
-          "description": "Place description",
-          "CompanyMetaData": {{
-            "Categories": [
-              {{
-                "name": "Category"
-              }}
-            ]
+def search_places_nearby(latitude, longitude, place_type=None, keyword=None, radius=1000):
+    """Sends request to YAgpt to search for places nearby | Отправляет запрос Ягпт для поиска мест рядом"""
+    prompt = f"""Given the coordinates (latitude: {latitude}, longitude: {longitude}), 
+    suggest 5 interesting places nearby (in the area of 5km) that match '{keyword}'.
+    For each place, provide:
+    1. Name of the place
+    2. Brief description
+    3. address (в формате ул.<название улицы>, д.<номер дома>)
+    4. Category (museum, restaurant, park, etc.)
+
+    Format the response as a JSON with this structure:
+    {{
+      "features": [
+        {{
+          "properties": {{
+            "name": "Place Name",
+            "address": "Place Address",
+            "metro": "metro station", (if it is in proximity of the place)
+            "city": "Place city",
+            "description": "Place description",
+            "CompanyMetaData": {{
+              "Categories": [
+                {{
+                  "name": "Category"
+                }}
+              ]
+            }}
+          }},
+          "geometry": {{
+            "coordinates": [longitude, latitude]
           }}
-        }},
-        "geometry": {{
-          "coordinates": [longitude, latitude]
         }}
-      }}
-    ]
-  }}
-  """
+      ]
+    }}
+    """
     url = yandex_url
     API_Key = yandex_api
-  # Заголовки запроса
+    # Заголовки запроса
     headers = {
-      'Authorization': f'Api-Key {API_Key}',
-      'Content-Type': 'application/json'
-  }
-  # Тело запроса
+        'Authorization': f'Api-Key {API_Key}',
+        'Content-Type': 'application/json'
+    }
+    # Тело запроса
     data = {
-      "modelUri": "gpt://b1gqi7ivu4cnp5fh58js/yandexgpt",
-      "generationOptions": {
-          "maxTokens": 500,  # Максимальное количество токенов в ответе
-          "temperature": 0.7  # Параметр креативности (от 0 до 1)
-      },
-      "completionOptions": {
-          "temperature": 0.6,
-          "maxTokens": "2000",
-          "reasoningOptions": {
-          "mode": "DISABLED"
-          }
-      },
-      "messages": [
-      {
-      "role": "system",
-      "text": prompt
-      }
-  ]
-  }
-  # Отправка POST-запроса
+        "modelUri": "gpt://b1gqi7ivu4cnp5fh58js/yandexgpt",
+        "generationOptions": {
+            "maxTokens": 500,  # Максимальное количество токенов в ответе
+            "temperature": 0.7  # Параметр креативности (от 0 до 1)
+        },
+        "completionOptions": {
+            "temperature": 0.6,
+            "maxTokens": "2000",
+            "reasoningOptions": {
+                "mode": "DISABLED"
+            }
+        },
+        "messages": [
+            {
+                "role": "system",
+                "text": prompt
+            }
+        ]
+    }
+    # Отправка POST-запроса
     response = requests.post(url, headers=headers, json=data)
 
-  # Проверка статуса ответа
+    # Проверка статуса ответа
     if response.status_code == 200:
-      result = response.json()
-      text_response = result["result"]["alternatives"][0]["message"]["text"]
-      text_response = text_response[4:-4]
-      return json.loads(text_response)
+        result = response.json()
+        text_response = result["result"]["alternatives"][0]["message"]["text"]
+        text_response = text_response[4:-4]
+        return json.loads(text_response)
     else:
-      print(f"Error: {response.status_code}")
-      print(response.text)
-      return create_fallback_data(latitude, longitude, keyword)
+        print(f"Error: {response.status_code}")
+        print(response.text)
+        return create_fallback_data(latitude, longitude, keyword)
+
 
 def create_fallback_data(latitude, longitude, keyword):
-  """Create fallback data if YandexGPT API fails"""
-  print(f"Creating fallback data for {keyword} at {latitude}, {longitude}")
+    """Create fallback data if YandexGPT API fails"""
+    print(f"Creating fallback data for {keyword} at {latitude}, {longitude}")
 
-  # Fallback sample data
-  return {
-      "features": [
-          {
-              "properties": {
-                  "name": f"Интересное место по запросу '{keyword}'",
-                  "description": "Предположительный адрес поблизости",
-                  "CompanyMetaData": {
-                      "Categories": [
-                          {
-                              "name": "Достопримечательность"
-                          }
-                      ]
-                  }
-              },
-              "geometry": {
-                  "coordinates": [longitude + 0.01, latitude + 0.005]
-              }
-          },
-          {
-              "properties": {
-                  "name": f"Еще одно место по запросу '{keyword}'",
-                  "description": "Адрес недалеко от вас",
-                  "CompanyMetaData": {
-                      "Categories": [
-                          {
-                              "name": "Развлечения"
-                          }
-                      ]
-                  }
-              },
-              "geometry": {
-                  "coordinates": [longitude - 0.02, latitude + 0.01]
-              }
-          }
-      ]
-  }
+    # Fallback sample data
+    return {
+        "features": [
+            {
+                "properties": {
+                    "name": f"Интересное место по запросу '{keyword}'",
+                    "description": "Предположительный адрес поблизости",
+                    "CompanyMetaData": {
+                        "Categories": [
+                            {
+                                "name": "Достопримечательность"
+                            }
+                        ]
+                    }
+                },
+                "geometry": {
+                    "coordinates": [longitude + 0.01, latitude + 0.005]
+                }
+            },
+            {
+                "properties": {
+                    "name": f"Еще одно место по запросу '{keyword}'",
+                    "description": "Адрес недалеко от вас",
+                    "CompanyMetaData": {
+                        "Categories": [
+                            {
+                                "name": "Развлечения"
+                            }
+                        ]
+                    }
+                },
+                "geometry": {
+                    "coordinates": [longitude - 0.02, latitude + 0.01]
+                }
+            }
+        ]
+    }
+
 
 @tb.message_handler(content_types=['location'])
-def handle_location(message, prev_message):
+def handle_location(message):
     '''Gets location of user for use | Получает местоположение пользователя для использования'''
+
     user_id = message.from_user.id
     user_name = message.from_user.first_name
     latitude = message.location.latitude
     longitude = message.location.longitude
-    
+
+    prev_message = 0
+    with get_db_connection() as conn:
+        prev_message = get_user_message_to_edit(conn, user_id)
+
     tb.delete_message(user_id, message.message_id - 1)
     tb.delete_message(user_id, message.message_id)
 
@@ -152,13 +166,14 @@ def handle_location(message, prev_message):
 
     # Try to get user's last message from the chat history
     with get_db_connection() as conn:
-        user_request = get_last_request(conn, user_id)
-        if (user_request == None):
+        user_request = get_user_last_request(conn, user_id)
+        if user_request == None:
             print("error with gettin last req")
-    
+
     # Status message to show user the request is being processed
 
-    tb.edit_message_text(f"🔍 Запрашиваю у YandexGPT информацию о местах по запросу '{user_request}'...", chat_id=message.chat.id, message_id=prev_message.message_id)
+    tb.edit_message_text(f"🔍 Запрашиваю у YandexGPT информацию о местах по запросу '{user_request}'...",
+                         chat_id=message.chat.id, message_id=prev_message)
     try:
         # Search for places based on the user's request using YandexGPT
         places_result = search_places_nearby(latitude, longitude, keyword=user_request)
@@ -192,13 +207,28 @@ def handle_location(message, prev_message):
 
                 # add place to base
                 with get_places_db_connection() as conn:
-                  if place_in_base(conn, name, city, address) == 0:
-                    add_place_to_base(conn, name, city, address)
+                    if place_in_base(conn, name, city, address) == 0:
+                        add_place_to_base(conn, name, city, address)
 
-            tb.edit_message_text(response_text, chat_id=prev_message.chat.id, message_id=prev_message.id, parse_mode="Markdown", disable_web_page_preview=True)
+            markup = InlineKeyboardMarkup()
+            markup.row_width = 2
+            markup.add(InlineKeyboardButton("1. ⭐", callback_data="r1"),
+                       InlineKeyboardButton("1. 💬", callback_data="c1"),
+                       InlineKeyboardButton("2. ⭐", callback_data="r2"),
+                       InlineKeyboardButton("2. 💬", callback_data="c2"),
+                       InlineKeyboardButton("3. ⭐", callback_data="r3"),
+                       InlineKeyboardButton("3. 💬", callback_data="c3"),
+                       InlineKeyboardButton("4. ⭐", callback_data="r4"),
+                       InlineKeyboardButton("4. 💬", callback_data="c4"),
+                       InlineKeyboardButton("5. ⭐", callback_data="r5"),
+                       InlineKeyboardButton("5. 💬", callback_data="c5"),)
+            tb.edit_message_text(response_text, chat_id=message.chat.id, message_id=prev_message, parse_mode="Markdown",
+                                 disable_web_page_preview=True)
         else:
             # tb.delete_message(user_id, status_message.message_id)
-            tb.send_message(user_id, f"❌ YandexGPT не смог найти места рядом с вами по запросу '{user_request}'. Попробуйте другой запрос.")
+            tb.send_message(user_id,
+                            f"❌ YandexGPT не смог найти места рядом с вами по запросу '{user_request}'. Попробуйте "
+                            f"другой запрос.")
     except Exception as e:
         # tb.delete_message(user_id, status_message.message_id)
         tb.send_message(user_id, f"❌ Произошла ошибка при поиске мест: {str(e)}. Пожалуйста, попробуйте еще раз.")
