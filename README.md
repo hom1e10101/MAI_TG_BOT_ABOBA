@@ -63,8 +63,7 @@
 
 ## 🌐 Ссылки на ресурсы:
 <a href="https://ru.yougile.com/board/6t8fc2a2cdbi">
-  <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22"></a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ<a href="https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885">
-  <img src="https://ugc.production.linktr.ee/dbe645a3-9c9a-432c-8629-8674ad649964_c77dc9c2-a0c6-41ab-9e54-265339f5339c-og-image.png?io=true&size=thumbnail-stack-v1_0" width="22" height="22"></a> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
+  <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22"></a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ<a href="https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885"><img src="https://ugc.production.linktr.ee/dbe645a3-9c9a-432c-8629-8674ad649964_c77dc9c2-a0c6-41ab-9e54-265339f5339c-og-image.png?io=true&size=thumbnail-stack-v1_0" width="22" height="22"></a> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
 
 <img src="https://i.pinimg.com/736x/3f/d1/27/3fd127cad6d7b981b9743b43f5c7820d.jpg">
 
