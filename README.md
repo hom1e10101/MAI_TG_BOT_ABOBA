@@ -35,6 +35,21 @@
 <a href="https://code.visualstudio.com/"><img src="https://avatars.mds.yandex.net/i?id=8655a72f8c70ebba0feeef2acc5f6741_l-10122654-images-thumbs&n=13" width="60" height="40"></a><a href="https://www.python.org/"><img src="https://img1.akspic.ru/attachments/originals/4/9/3/3/6/163394-programmist_na_python-piton-algoritmicheskij_yazyk-stoyanie-ishodnyj_kod-3840x2160.png" width="66" height="40"></a><a href="https://ya.ru/ai/gpt"><img src="https://static.tengrinews.kz/userdata/news/2023/news_519361/thumb_b/photo_454258.jpeg" width="80" height="40"></a><a href="https://web.telegram.org/"><img src="https://keaz.ru/img/tg.png" width="66" height="40"></a><a href="https://yandex.cloud/ru"><img src="https://avatars.mds.yandex.net/i?id=add1f7dbe58abc3233026125fc749956_l-9107575-images-thumbs&n=13" width="70" height="40"></a>
 
 
+## Запуск проекта:
+1. Установить необходимые библиотеки
+```
+pip install telebot
+pip install geopy
+pip install sqlite3
+pip install contextlib
+```
+2. Создать файл secret.py в папке bot и вписать ключи:
+```
+tg_api = 
+yandex_url = 
+yandex_api = 
+```
+
 ## Ссылки на ресурсы:
 <a href="https://ru.yougile.com/board/6t8fc2a2cdbi">
   <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22"></a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ<a href="https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885"><img src="https://ugc.production.linktr.ee/dbe645a3-9c9a-432c-8629-8674ad649964_c77dc9c2-a0c6-41ab-9e54-265339f5339c-og-image.png?io=true&size=thumbnail-stack-v1_0" width="22" height="22"></a> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
