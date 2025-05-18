@@ -4,6 +4,7 @@ import os
 import requests
 from telebot.storage import StateMemoryStorage
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from funcs import get_yandex_maps_link
 
 from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role
 
@@ -27,37 +28,47 @@ from places_requests import get_places_db_connection
 def search_places_nearby(latitude, longitude, place_type=None, keyword=None, radius=1000):
     """Sends request to YAgpt to search for places nearby | Отправляет запрос Ягпт для поиска мест рядом"""
     prompt = f"""Given the coordinates (latitude: {latitude}, longitude: {longitude}), 
-    suggest 5 interesting places nearby (in the area of 5km) that match '{keyword}'.
-    For each place, provide:
-    1. Name of the place
-    2. Brief description
-    3. address (в формате ул.<название улицы>, д.<номер дома>)
-    4. Category (museum, restaurant, park, etc.)
+suggest 5 REAL, EXISTING places nearby (within 5km) that match '{keyword}'.
 
-    Format the response as a JSON with this structure:
+**Strict requirements:**  
+- Each place MUST exist at the given coordinates.  
+- Coordinates MUST be within 5 km (delta: ±0.045° lat, ±0.06° lon).  
+- Address format: "улица Название, дом Номер, Город" (обязательно точный адрес).  
+
+!!!MAKE SURE THAT STRICT REQUIREMENTS ARE COMPLETED!!!
+
+The places must actually exist at these locations. For each place, provide:
+1. Real, exact name
+2. Brief description
+3. Full, exact address in the format: "ул. <name>, д. <number>, <city>"
+4. Exact coordinates (latitude, longitude)
+5. Category (парк, ресторан, музей)
+
+
+
+Return as JSON with this exact structure:
+{{
+  "features": [
     {{
-      "features": [
-        {{
-          "properties": {{
-            "name": "Place Name",
-            "address": "Place Address",
-            "metro": "metro station", (if it is in proximity of the place)
-            "city": "Place city",
-            "description": "Place description",
-            "CompanyMetaData": {{
-              "Categories": [
-                {{
-                  "name": "Category"
-                }}
-              ]
+      "properties": {{
+        "name": "EXACT REAL NAME",
+        "address": "FULL EXACT ADDRESS",
+        "city": "Place city"
+        "description": "Brief description",
+        "CompanyMetaData": {{
+          "Categories": [
+            {{
+              "name": "Category"
             }}
-          }},
-          "geometry": {{
-            "coordinates": [longitude, latitude]
-          }}
+          ]
         }}
-      ]
+      }},
+      "geometry": {{
+        "coordinates": [EXACT_LONGITUDE, EXACT_LATITUDE]
+      }}
     }}
+  ]
+}}
     """
     url = yandex_url
     API_Key = yandex_api
@@ -68,9 +79,9 @@ def search_places_nearby(latitude, longitude, place_type=None, keyword=None, rad
     }
     # Тело запроса
     data = {
-        "modelUri": "gpt://b1gqi7ivu4cnp5fh58js/yandexgpt",
+        "modelUri": "gpt://b1gaa9e1j7g69a60a8l3/yandexgpt",
         "generationOptions": {
-            "maxTokens": 500,  # Максимальное количество токенов в ответе
+            "maxTokens": 2000,  # Максимальное количество токенов в ответе
             "temperature": 0.7  # Параметр креативности (от 0 до 1)
         },
         "completionOptions": {
@@ -147,7 +158,7 @@ def create_fallback_data(latitude, longitude, keyword):
 
 @tb.message_handler(content_types=['location'])
 def handle_location(message):
-    '''Gets location of user for use | Получает местоположение пользователя для использования'''
+    """Gets location of user for use | Получает местоположение пользователя для использования"""
 
     user_id = message.from_user.id
     user_name = message.from_user.first_name
@@ -167,8 +178,8 @@ def handle_location(message):
     # Try to get user's last message from the chat history
     with get_db_connection() as conn:
         user_request = get_user_last_request(conn, user_id)
-        if user_request == None:
-            print("error with gettin last req")
+        if user_request is None:
+            print("error with getting last req")
 
     # Status message to show user the request is being processed
 
@@ -184,26 +195,21 @@ def handle_location(message):
                 properties = place.get('properties', {})
                 name = properties.get('name', 'Неизвестное место')
                 address = properties.get('address', 'Адрес не указан')
-                metro = properties.get('metro', 'Адрес не указан')
                 city = properties.get('city', 'Адрес не указан')
                 description = properties.get('description', 'Адрес не указан')
                 # Get coordinates from the response
                 coordinates = place.get('geometry', {}).get('coordinates', [])
-                if coordinates and len(coordinates) >= 2:
-                    place_lng, place_lat = coordinates
-                    maps_url = f"https://www.openstreetmap.org/?mlat={place_lat}&mlon={place_lng}#map=16/{place_lat}/{place_lng}"
-                else:
-                    maps_url = "https://www.openstreetmap.org"
+                address = properties.get('address', '').strip()
+                yandex_maps_url = get_yandex_maps_link(address)
                 # Get company metadata if available
                 company_metadata = properties.get('CompanyMetaData', {})
                 categories = company_metadata.get('Categories', [])
                 category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
                 response_text += f"🏙️ {i}. *{name}*\n"
                 response_text += f"   📍 Адрес: {address}\n"
-                response_text += f"   🚇 Станция Метро: {metro}\n"
                 response_text += f"   🔖 Категория: {category_name}\n"
                 response_text += f"   🧐 Описание: {description}\n"
-                response_text += f"   🗺️ [Открыть на OpenStreetMap]({maps_url})\n\n"
+                response_text += f"   🌐 [Узреть в Яндекс.Карты]({yandex_maps_url})\n\n"
 
                 # add place to base
                 with get_places_db_connection() as conn:
