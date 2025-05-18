@@ -14,6 +14,7 @@ def get_db_connection():
 
 # добавляем юзера в БД
 def add_user_to_base(connection: sqlite3.Connection, user_id, name):
+    """Adds user to db | Добавляет пользователя в бд"""
     cursor = connection.cursor()
 
     cursor.execute('''
@@ -25,6 +26,7 @@ def add_user_to_base(connection: sqlite3.Connection, user_id, name):
 
 # меняем имя в БД
 def upd_user_name(connection: sqlite3.Connection, user_id, name):
+    """Updates users name in db | Обновляет имя пользователя в бд"""
     cursor = connection.cursor()
 
     cursor.execute('UPDATE Users SET name = ? WHERE user_id = ?', (name, user_id))
@@ -33,6 +35,8 @@ def upd_user_name(connection: sqlite3.Connection, user_id, name):
 
 # меняем роль в БД
 def get_user_role(connection: sqlite3.Connection, user_id, role):
+    """Gets users role in db | Получает роль пользователя в бд"""
+
     users = connection.cursor()
     users.execute("""
             SELECT role 
@@ -46,6 +50,7 @@ def get_user_role(connection: sqlite3.Connection, user_id, role):
 
 # меняем роль в БД
 def upd_user_role(connection: sqlite3.Connection, user_id, role):
+    """Updates users role | Меняет роль пользователя в бд"""
     cursor = connection.cursor()
 
     cursor.execute('UPDATE Users SET role = ? WHERE user_id = ?', (role, user_id))

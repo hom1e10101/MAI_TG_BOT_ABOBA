@@ -26,6 +26,7 @@ def add_user_settings(connection: sqlite3.Connection, user_id):
 
 # получаем id сообщения, которое редактирует бот
 def get_user_message_to_edit(connection: sqlite3.Connection, user_id):
+    """Gets id of message that will be edited | Получает id сообщения, которое будет редактировать бот"""
     users = connection.cursor()
     users.execute("""
         SELECT message_to_edit 
@@ -38,6 +39,7 @@ def get_user_message_to_edit(connection: sqlite3.Connection, user_id):
 
 # обновляем id сообщения, которое редактирует бот
 def upd_user_message_to_edit(connection: sqlite3.Connection, user_id, message_id):
+    """Updates id of message that will be edited | Обновляет id сообщения, которое будет редактировать бот"""
     users = connection.cursor()
     users.execute("""
         UPDATE Settings SET message_to_edit = ? WHERE user_id = ? 
@@ -48,6 +50,7 @@ def upd_user_message_to_edit(connection: sqlite3.Connection, user_id, message_id
 
 # получаем city юзера
 def get_user_city(connection: sqlite3.Connection, user_id):
+    """Gets city where user is searching | Получает город, в котором необходимо искать места"""
     users = connection.cursor()
     users.execute("""
         SELECT city 
@@ -60,6 +63,7 @@ def get_user_city(connection: sqlite3.Connection, user_id):
 
 # обновляем city юзера
 def upd_user_city(connection: sqlite3.Connection, user_id, city):
+    """Updates city where user is searching | Обновляет город, в котором необходимо искать места"""
     users = connection.cursor()
     users.execute("""
         UPDATE Settings SET city = ? WHERE user_id = ? 
