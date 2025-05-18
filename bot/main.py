@@ -7,38 +7,44 @@ from settings_requests import get_db_connection, get_user_status, upd_user_statu
 
 from secret import tg_api
 
-apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
+apishka = os.environ.get("TELEGRAM_API_TOKEN", tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 tb.remove_webhook()
 
-@tb.message_handler(commands=['start'])
+@tb.message_handler(commands=["start"])
 def start_handler(message):
     start(message)
 
-@tb.message_handler(commands=['help'])
+@tb.message_handler(commands=["help"])
 def help_handler(message):
     help(message)
 
-@tb.message_handler(commands=['settings'])
+@tb.message_handler(commands=["settings"])
 def settings_handler(message):
     user_settings(message)
 
+
+from funcs import set_comment, set_rating
 @tb.message_handler()
 def message_handler(message):
-    status = ''
+    status = ""
     user_id = message.from_user.id
     with get_db_connection() as conn:
-        status = get_user_status(user_id)
+        status = get_user_status(conn, user_id)
     
     if status == "start":
         place(message)
     elif status == "distance":
         change_distance(message)
-    elif status == "comments":
+    elif status in {"r1", "r2", "r3", "r4", "r5"}:
+        set_rating(message)
+    elif status in {"c1", "c2", "c3", "c4", "c5"}:
+        set_comment(message)
         
 
-@tb.message_handler(content_types=['location'])
+
+@tb.message_handler(content_types=["location"])
 def location_handler(message):
     handle_location(message)
 

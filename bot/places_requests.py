@@ -5,6 +5,7 @@ from secret import database
 
 @contextmanager
 def get_places_db_connection():
+    """Connection to db | Подключаемся к бд"""
     connection = sqlite3.connect(database)
     connection.row_factory = sqlite3.Row
     try:
@@ -43,3 +44,9 @@ def add_place_to_base(connection: sqlite3.Connection, name, city, address):
     places = connection.cursor()
     places.execute('INSERT INTO Places (name, city, address) VALUES (?, ?, ?)', (name, city, address))
     connection.commit()
+
+def get_id_by_name_address(connection: sqlite3.Connection, name, city, address):
+    places = connection.cursor()
+    places.execute('SELECT place_id FROM Places WHERE name = ? AND address = ?', (name, address))
+    result = places.fetchone()
+    return result[0] if result else None
