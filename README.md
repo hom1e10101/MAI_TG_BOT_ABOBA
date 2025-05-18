@@ -32,7 +32,7 @@
 
 
 ## Технологический стек:
-<a href="https://code.visualstudio.com/"><img src="https://avatars.mds.yandex.net/i?id=8655a72f8c70ebba0feeef2acc5f6741_l-10122654-images-thumbs&n=13" width="60" height="40"></a><a href="https://www.python.org/"><img src="https://img1.akspic.ru/attachments/originals/4/9/3/3/6/163394-programmist_na_python-piton-algoritmicheskij_yazyk-stoyanie-ishodnyj_kod-3840x2160.png" width="66" height="40"></a><a href="https://ya.ru/ai/gpt"><img src="https://static.tengrinews.kz/userdata/news/2023/news_519361/thumb_b/photo_454258.jpeg" width="80" height="40"></a><a href="https://web.telegram.org/"><img src="https://keaz.ru/img/tg.png" width="66" height="40"></a>
+<a href="https://code.visualstudio.com/"><img src="https://avatars.mds.yandex.net/i?id=8655a72f8c70ebba0feeef2acc5f6741_l-10122654-images-thumbs&n=13" width="60" height="40"></a><a href="https://www.python.org/"><img src="https://img1.akspic.ru/attachments/originals/4/9/3/3/6/163394-programmist_na_python-piton-algoritmicheskij_yazyk-stoyanie-ishodnyj_kod-3840x2160.png" width="66" height="40"></a><a href="https://ya.ru/ai/gpt"><img src="https://static.tengrinews.kz/userdata/news/2023/news_519361/thumb_b/photo_454258.jpeg" width="80" height="40"></a><a href="https://web.telegram.org/"><img src="https://keaz.ru/img/tg.png" width="66" height="40"></a><a href="https://yandex.cloud/ru"><img src="https://avatars.mds.yandex.net/i?id=add1f7dbe58abc3233026125fc749956_l-9107575-images-thumbs&n=13" width="70" height="40"></a>
 
 
 ## Ссылки на ресурсы:
