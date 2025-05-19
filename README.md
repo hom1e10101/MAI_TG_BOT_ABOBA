@@ -36,18 +36,14 @@
 
 
 ## Запуск проекта:
-1. Установить необходимые библиотеки
-```
-pip install telebot
-pip install geopy
-pip install sqlite3
-pip install contextlib
-```
+1. Установить необходимые библиотеки с помощью [requirments.txt](requirements.txt)
+
 2. Создать файл secret.py в папке bot и вписать ключи:
 ```
-tg_api = 
-yandex_url = 
-yandex_api = 
+tg_api = '<апи ключ получаемый в Botfather>'
+database = r'<полный путь к базе данных>'
+yandex_url = 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion'
+yandex_api = 'уникальный апи ключ получаемый в яндекс клауд'
 ```
 
 ## Ссылки на ресурсы:
