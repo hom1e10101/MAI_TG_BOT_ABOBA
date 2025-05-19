@@ -36,7 +36,7 @@
 
 
 ## Запуск проекта:
-1. Установить необходимые библиотеки с помощью [requirments.txt](requirements.txt)
+1. Установить необходимые библиотеки с помощью [requirments.txt](requirements.txt) написав в терминале ```pip install -r requirements.txt```
 2. Убедиться в наличии или установить sqlite3
 3. Создать файл secret.py в папке bot и вписать ключи:
 ```
