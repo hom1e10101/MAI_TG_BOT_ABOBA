@@ -37,8 +37,8 @@
 
 ## Запуск проекта:
 1. Установить необходимые библиотеки с помощью [requirments.txt](requirements.txt)
-
-2. Создать файл secret.py в папке bot и вписать ключи:
+2. Убедиться в наличии или установить sqlite3
+3. Создать файл secret.py в папке bot и вписать ключи:
 ```
 tg_api = '<апи ключ получаемый в Botfather>'
 database = r'<полный путь к базе данных>'
@@ -51,7 +51,7 @@ yandex_api = 'уникальный апи ключ получаемый в ян�
   <img src="https://play-lh.googleusercontent.com/z8qX6XNHOIRaXjXotyuPKLgekAa1XZ-8ny34CpbUKoFl8-GT2kXZFM-dVAj8VCVxCw" width="22" height="22"></a> Ссылка на Yougile: https://ru.yougile.com/board/6t8fc2a2cdbi ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ<a href="https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885"><img src="https://ugc.production.linktr.ee/dbe645a3-9c9a-432c-8629-8674ad649964_c77dc9c2-a0c6-41ab-9e54-265339f5339c-og-image.png?io=true&size=thumbnail-stack-v1_0" width="22" height="22"></a> Ссылка на Miro: https://miro.com/app/board/uXjVIFSljUY=/?share_link_id=849545594885
 
 ## Демонстрация нашего проекта:
-(Ссылка будет добавлена)
+[Клац](https://t.me/New_places_fr_bot)
 
 ## Платформы, где представлены наши результаты:
 <img src="https://github.com/user-attachments/assets/6b9f41e3-1749-46b2-be42-5e672eb6da24" width="220" height="230">ㅤㅤㅤㅤㅤ<img src="https://github.com/user-attachments/assets/26ea43e5-605e-46fa-bf08-c9007b8bbe03" width="220" height="230">
