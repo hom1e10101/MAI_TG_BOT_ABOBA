@@ -136,3 +136,68 @@ def get_user_status(connection: sqlite3.Connection, user_id):
     
     result = users.fetchone()
     return result[0] if result else None
+
+
+# обновляем индексы запроса юзера
+def upd_request_place_id(connection: sqlite3.Connection, user_id, places_ids):
+    cursor = connection.cursor()
+
+    s = """UPDATE Settings SET\n"""
+    for i in range(len(places_ids)):
+        s += f'request_place_id_{i} = ?,\n'
+    s += """current_index = 0 WHERE user_id = ?"""
+
+    cursor.execute(s, (*places_ids, user_id))
+    connection.commit()
+
+# получаем id места по позиции
+def get_request_place_id(connection: sqlite3.Connection, user_id, current_index):
+    users = connection.cursor()
+    users.execute(f"""
+        SELECT request_place_id_{current_index} 
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    result = users.fetchone()
+    return result[0] if result else None
+
+def get_user_places_ids(connection: sqlite3.Connection, user_id, max_cnt_of_req) -> list:
+    """Возвращает список ID мест пользователя"""
+    cursor = connection.cursor()
+    
+    s = 'SELECT\n'
+
+    for i in range(max_cnt_of_req):
+        s += f"request_place_id_{i},\n"
+    s = s[:-2]
+    s += "\nFROM Settings WHERE user_id = ?"
+
+    cursor.execute(s, (user_id,))
+    
+    row = cursor.fetchone()
+    if not row:
+        return []
+
+    return [place_id for place_id in row if place_id is not None]
+
+# получаем curr_ind
+def get_current_index(connection: sqlite3.Connection, user_id):
+    users = connection.cursor()
+    users.execute(f"""
+        SELECT current_index 
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    result = users.fetchone()
+    return result[0] if result else None
+
+# обновляем curr_ind
+def upd_current_index(connection: sqlite3.Connection, user_id, curr_ind):
+    users = connection.cursor()
+    users.execute(f"""
+        UPDATE Settings SET current_index = ? WHERE user_id = ? 
+    """, (curr_ind, user_id))
+    
+    connection.commit()

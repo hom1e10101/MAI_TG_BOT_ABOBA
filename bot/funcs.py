@@ -9,7 +9,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardBu
 from telebot.handler_backends import State, StatesGroup
 from telebot.storage import StateMemoryStorage
 
-from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role 
+from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role
 
 from settings_requests import add_user_settings, get_user_message_to_edit, upd_user_message_to_edit, get_user_city, upd_user_city, get_user_distance, upd_user_distance, get_user_last_request, upd_user_last_request
 from settings_requests import upd_user_status, get_user_status
@@ -127,11 +127,12 @@ def change_distance(message):
     with get_db_connection() as conn:
         upd_user_status(conn, "start")
 
-from costil import ids
+# from costil import ids
 
 from commet_requests import edit_comment_rating
 from commet_requests import commented_by_user, edit_comment
 from commet_requests import edit_comment_text
+from settings_requests import get_request_place_id
 def set_rating(message):
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id - 1)
@@ -140,8 +141,12 @@ def set_rating(message):
     with get_db_connection() as conn:
         status = get_user_status(conn, user_id)
     
-    needed_place = int(status[-1])
-    place_id = ids[needed_place]
+    needed_place = int(status[-1]) - 1
+
+    with get_db_connection() as conn:
+        place_id = get_request_place_id(conn, user_id, needed_place)
+
+
     if message.text.isdigit():
         print(int(message.text))
         with get_db_connection() as conn:
@@ -169,9 +174,12 @@ def set_comment(message):
     with get_db_connection() as conn:
         status = get_user_status(conn, user_id)
     
-    needed_place = int(status[-1])
-    place_id = ids[needed_place]
+    needed_place = int(status[-1]) - 1
+    # place_id = ids[needed_place]
+
+    
     with get_db_connection() as conn:
+        place_id = get_request_place_id(conn, user_id, needed_place)
         if (commented_by_user(conn, user_id, place_id)):
             edit_comment_text(conn, user_id, place_id, message.text)
         else:

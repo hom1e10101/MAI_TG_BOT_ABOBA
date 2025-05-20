@@ -1,5 +1,4 @@
 import time
-
 import telebot
 import json
 import os
@@ -31,7 +30,6 @@ geolocator = Nominatim(
     timeout=10
 )
 
-from costil import ids
 
 def classify_place_type(user_query):
     """Определяет тип места с помощью YandexGPT"""
@@ -249,6 +247,58 @@ def create_fallback_data(latitude, longitude, keyword):
     }
 
 
+
+from commet_requests import get_place_rating
+from places_requests import get_place_by_id
+def create_place_card_by_db(place_id, index, total):
+    """Создает карточку места для отображения"""
+    with get_db_connection() as conn:
+        properties = get_place_by_id(conn, place_id)
+    name = properties.get('name', 'Неизвестное место')
+    address = properties.get('address', 'Адрес не указан')
+    description = properties.get('description', 'Нет описания')
+    coordinate_x = properties.get('coordinate_x')
+    coordinate_y = properties.get('coordinate_y')
+    coordinates = (coordinate_x, coordinate_y)
+    yandex_maps_url = get_yandex_maps_link(address)
+    category_name = properties.get('category_name', 'Нет категории')
+
+    avg_rating = 0
+    with get_db_connection() as conn:
+        if (get_place_rating(conn, place_id) is not None):
+            avg_rating = float(get_place_rating(conn, place_id))
+
+    card_text = f"🏙️ *{name}*\n" #
+    if (avg_rating > 0):
+        card_text += f"⭐ *Оценка*: {avg_rating}\n" #
+    card_text += f"📍 *Адрес*: {(address)}\n" #
+    card_text += f"🔖 *Категория*: {category_name}\n" #
+    card_text += f"🧐 *Описание*: {description}\n" #
+    card_text += f"🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
+    card_text += f"📍 Место {index + 1} из {total}"
+
+    return card_text
+
+
+def create_navigation_keyboard(current_index, total_places):
+    """Создает клавиатуру для навигации между местами"""
+    markup = InlineKeyboardMarkup()
+    row = []
+
+    if current_index > 0:
+        row.append(InlineKeyboardButton("⬅️", callback_data=f"prev_{current_index}"))
+
+    row.append(InlineKeyboardButton("⭐", callback_data=f"rate_{current_index}"))
+    row.append(InlineKeyboardButton("💬", callback_data=f"comment_{current_index}"))
+
+    if current_index < total_places - 1:
+        row.append(InlineKeyboardButton("➡️", callback_data=f"next_{current_index}"))
+
+    markup.row(*row)
+    return markup
+
+
+from settings_requests import upd_request_place_id
 @tb.message_handler(content_types=['location'])
 def handle_location(message):
     """Обрабатывает местоположение пользователя и ищет места поблизости"""
@@ -284,50 +334,46 @@ def handle_location(message):
 
         if places_result and places_result.get('features'):
             places = places_result['features'][:5]
-            response_text = f"🌟 Вот интересные места рядом с вами по запросу '{user_request}':\n\n"
 
+            # Сохраняем ID мест в базу данных
+            places_ids = []
+            with get_places_db_connection() as conn:
+                for i, place in enumerate(places):
+                    properties = place.get('properties', {})
+                    name = properties.get('name', 'Неизвестное место')
+                    address = properties.get('address', 'Адрес не указан')
 
-            for i, place in enumerate(places, 1):
-                properties = place.get('properties', {})
-                name = properties.get('name', 'Неизвестное место')
-                address = properties.get('address', 'Адрес не указан')
-                description = properties.get('description', 'Нет описания')
-
-                coordinates = place.get('geometry', {}).get('coordinates', [])
-                yandex_maps_url = get_yandex_maps_link(address)
-
-                company_metadata = properties.get('CompanyMetaData', {})
-                categories = company_metadata.get('Categories', [])
-                category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
-
-                response_text += f"🏙️ {i}. *{name}*\n"
-                response_text += f"   📍 Адрес: {address.split(',')[0]}\n"
-                response_text += f"   🔖 Категория: {category_name}\n"
-                response_text += f"   🧐 Описание: {description}\n"
-                response_text += f"   🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
-
-                with get_places_db_connection() as conn:
                     if place_in_base(conn, name, "", address) == 0:
-                        add_place_to_base(conn, name, "", address)
-                    ids[i] = get_id_by_name_address(conn, name, "", address)
-                print(ids)
+                        description = properties.get('description', 'Нет описания')
+                        coordinates = place.get('geometry', {}).get('coordinates', [])
 
-            markup = InlineKeyboardMarkup()
-            markup.row_width = 2
-            markup.add(InlineKeyboardButton("1. ⭐", callback_data="r1"),
-                       InlineKeyboardButton("1. 💬", callback_data="c1"),
-                       InlineKeyboardButton("2. ⭐", callback_data="r2"),
-                       InlineKeyboardButton("2. 💬", callback_data="c2"),
-                       InlineKeyboardButton("3. ⭐", callback_data="r3"),
-                       InlineKeyboardButton("3. 💬", callback_data="c3"),
-                       InlineKeyboardButton("4. ⭐", callback_data="r4"),
-                       InlineKeyboardButton("4. 💬", callback_data="c4"),
-                       InlineKeyboardButton("5. ⭐", callback_data="r5"),
-                       InlineKeyboardButton("5. 💬", callback_data="c5"))
+                        company_metadata = properties.get('CompanyMetaData', {})
+                        categories = company_metadata.get('Categories', [])
+                        category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
 
-            tb.edit_message_text(response_text, chat_id=message.chat.id,
-                                 message_id=prev_message, parse_mode="Markdown",
-                                 reply_markup=markup, disable_web_page_preview=True)
+                        now_ind = add_place_to_base(conn, name, "", address, description, coordinates[0], coordinates[1], category_name, "")
+                        places_ids.append(now_ind)
+                    else:
+                        now_ind = get_id_by_name_address(conn, name, "", address)
+                        places_ids.append(now_ind)
+                print(places_ids)
+
+            # Сохраняем данные о местах для пользователя
+            with get_db_connection() as conn:
+                upd_request_place_id(conn, user_id, places_ids)
+
+            place_id = places_ids[0]
+            card_text = create_place_card_by_db(place_id, 0, len(places_ids))
+
+            markup = create_navigation_keyboard(0, len(places))
+            tb.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=prev_message,
+                text=card_text,
+                parse_mode="Markdown",
+                reply_markup=markup,
+                disable_web_page_preview=True
+            )
         else:
             tb.send_message(user_id,
                             f"❌ Не удалось найти места поблизости по запросу '{user_request}'. Попробуйте другой запрос.")

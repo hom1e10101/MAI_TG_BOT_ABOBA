@@ -43,11 +43,14 @@ def place_in_base(connection: sqlite3.Connection, name, city, address):
     return 0
 
 # добавляем место в БД по имени и адрессу
-def add_place_to_base(connection: sqlite3.Connection, name, city, address):
+def add_place_to_base(connection: sqlite3.Connection, name, city, address, description, coordinate_x, coordinate_y, category_name, yandex_maps_url):
     """Adds place to db by its name and address | Добавляет место в бд по его имени и адресу"""
     places = connection.cursor()
-    places.execute('INSERT INTO Places (name, city, address) VALUES (?, ?, ?)', (name, city, address))
+    places.execute('INSERT INTO Places (name, city, address, description, coordinate_x, coordinate_y, category_name, yandex_maps_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+                   (name, city, address, description, coordinate_x, coordinate_y, category_name, yandex_maps_url))
+    new_id = places.lastrowid
     connection.commit()
+    return new_id
 
 def get_id_by_name_address(connection: sqlite3.Connection, name, city, address):
     """Gets id of place by name and address | получает id места по имени и адресу"""
@@ -55,3 +58,14 @@ def get_id_by_name_address(connection: sqlite3.Connection, name, city, address):
     places.execute('SELECT place_id FROM Places WHERE name = ? AND address = ?', (name, address))
     result = places.fetchone()
     return result[0] if result else None
+
+def get_place_by_id(conn, place_id):
+    """Получает полную информацию о месте по его ID"""
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM places WHERE place_id = ?", (place_id,))
+    place_data = cursor.fetchone()
+    
+    if place_data:
+        columns = [column[0] for column in cursor.description]
+        return dict(zip(columns, place_data))
+    return None
