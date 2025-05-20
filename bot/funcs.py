@@ -183,7 +183,7 @@ def set_comment(message):
         if (commented_by_user(conn, user_id, place_id)):
             edit_comment_text(conn, user_id, place_id, message.text)
         else:
-            add_comment(conn, user_id, place_id, message.text, 5)
+            add_comment(conn, user_id, place_id, message.text, 0)
     
     
     sent_massage = tb.send_message(user_id,

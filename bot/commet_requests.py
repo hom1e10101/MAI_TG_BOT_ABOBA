@@ -24,7 +24,7 @@ def commented(connection: sqlite3.Connection, place_id):
 def get_place_rating(connection: sqlite3.Connection, place_id):
     """Gets the average rating for place | Получает среднюю оценку места"""
     cursor = connection.cursor()
-    cursor.execute('SELECT AVG(rating) FROM Comments WHERE place_id = ?', (place_id,))
+    cursor.execute('SELECT AVG(rating) FROM Comments WHERE place_id = ? AND rating != 0', (place_id,))
     return cursor.fetchone()[0]
 
 # возвращаем список id комментов юзера
@@ -66,7 +66,7 @@ def add_comment(connection: sqlite3.Connection, user_id, place_id, text, rating)
     connection.commit()
 
 # замена коммента
-def edit_comment(connection: sqlite3.Connection, user_id, place_id, text, rating):
+def edit_comment(connection: sqlite3.Connection, user_id, place_id, text):
     """Edits comment | Редактирует комментарий"""
     cursor = connection.cursor()
     cursor.execute('SELECT comment_id FROM Comments WHERE user_id = ? AND place_id = ?', (user_id, place_id))
@@ -74,7 +74,7 @@ def edit_comment(connection: sqlite3.Connection, user_id, place_id, text, rating
     if result == None:
         print("нет такого коммента")
     comm_id = result[0]
-    cursor.execute('UPDATE Comments SET text = ?, rating = ? WHERE comment_id = ?', (text, rating, comm_id))
+    cursor.execute('UPDATE Comments SET text = ? WHERE comment_id = ?', (text, comm_id))
     connection.commit()
 
 
