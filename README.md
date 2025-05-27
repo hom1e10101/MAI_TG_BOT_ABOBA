@@ -3,7 +3,7 @@
 
 ## Состав команды:
 
-1. **Фокина Татьяна** - _Team Lead & Analyst & Miro Maps Designer_
+1. **Фокина Татьяна** - _Team Lead & Analyst & Miro Maps Designer & Presentation Designer_
 2. **Балдынов Тамир** - _Backend Developer_
 3. **Меньшиков Алексей** - _Based Backend Developer_
 4. **Кучин Клим** - _Presentation Designer_
