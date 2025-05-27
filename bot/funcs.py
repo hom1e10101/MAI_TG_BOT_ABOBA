@@ -81,7 +81,8 @@ def user_settings(message):
     user_id = message.from_user.id
     user_name = message.from_user.first_name
     # print(message.id)
-    tb.delete_message(user_id, message.id - 1)
+    with get_db_connection() as conn:
+        tb.delete_message(user_id, get_user_message_to_edit(conn, user_id))
     tb.delete_message(user_id, message.id)
     markup = InlineKeyboardMarkup()
     markup.row_width = 4

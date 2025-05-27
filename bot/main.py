@@ -52,12 +52,13 @@ def location_handler(message):
     handle_location(message)
 
 
+from commet_requests import get_comment_by_comment_id
 from ya_ai_xd import create_place_card_by_db
 from places_requests import get_place_by_id
 from settings_requests import get_user_request_ids, get_current_index, upd_current_index, \
                 upd_user_request_comment_ids, get_user_request_comment_ids, upd_current_comment_index, get_current_comment_index
 from comments import create_comment_card, create_navigation_keyboard_for_comments, get_comments,\
-      get_user_comments, create_navigation_keyboard_for_user_comments
+      get_user_comments, create_navigation_keyboard_for_user_comments, print_place
 @tb.callback_query_handler()
 def handle_navigation(call):
     
@@ -146,7 +147,7 @@ def handle_navigation(call):
             print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
     
-    elif call.data.startswith(("comm_prev_", "comm_next_")):
+    elif call.data.startswith(("comm_prev_", "comm_next_", "comm_back_")):
         """Навигация в комментариях"""
         try:
             user_id = call.from_user.id
@@ -169,6 +170,8 @@ def handle_navigation(call):
             elif call.data.startswith('comm_next_'):
                 # current_index = int(current_index)
                 new_index = min(total_comments - 1, current_index + 1)
+            elif call.data.startswith('comm_back_'):
+                new_index = current_index
             else:
                 return
 
@@ -180,8 +183,10 @@ def handle_navigation(call):
 
             # Создаем новое сообщение
             card_text = create_comment_card(comment_id)
-            if call.data.startswith(('comm_next_u_', 'comm_prev_u_')):
-                markup = create_navigation_keyboard_for_user_comments(new_index, total_comments)
+            if call.data.startswith(('comm_next_u_', 'comm_prev_u_', 'comm_back_')):
+                with get_db_connection() as conn:
+                    comm = get_comment_by_comment_id(conn, comment_id)
+                markup = create_navigation_keyboard_for_user_comments(new_index, total_comments, comm["place_id"])
             else:
                 with get_db_connection() as conn:
                     comm_idx = get_current_index(conn, user_id)
@@ -215,8 +220,12 @@ def handle_navigation(call):
                 with get_db_connection() as conn:
                     upd_user_status(conn, user_id, "distance")
             elif call.data.startswith('comments'):
-                print("keke")
                 get_user_comments(user_id, chat_id, message_id, call.id)
+            elif call.data.startswith('place_'):
+                with get_db_connection() as conn:
+                    curr_inx = int(get_current_comment_index(conn, user_id))
+                place_id = int(call.data.split('_')[1])
+                print_place(user_id, curr_inx, chat_id, message_id, call.id, place_id)
             else:
                 return
         except Exception as e:

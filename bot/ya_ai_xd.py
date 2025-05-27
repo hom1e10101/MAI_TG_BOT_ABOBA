@@ -274,7 +274,8 @@ def create_place_card_by_db(place_id, index, total):
     card_text += f"🔖 *Категория*: {category_name}\n" #
     card_text += f"🧐 *Описание*: {description}\n" #
     card_text += f"🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
-    card_text += f"📍 Место {index + 1} из {total}"
+    if (total > 1):
+        card_text += f"📍 Место {index + 1} из {total}"
 
     return card_text
 

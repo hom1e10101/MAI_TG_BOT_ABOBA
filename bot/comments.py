@@ -84,14 +84,20 @@ def get_comments(user_id, chat_id, message_id, place_id, place_idx, call_id):
     )
 
 
-def create_navigation_keyboard_for_user_comments(current_index, total_comments):
+def create_navigation_keyboard_for_user_comments(current_index, total_comments, place_id):
     """Создает клавиатуру для навигации между местами"""
+    print("lelelelelel")
     markup = InlineKeyboardMarkup()
     row = []
 
     if current_index > 0:
         row.append(InlineKeyboardButton("⬅️", callback_data=f"comm_prev_u_{current_index}"))
-    row.append(InlineKeyboardButton("🌷", callback_data=f"kek"))
+    
+    if place_id != -1:
+        row.append(InlineKeyboardButton("ℹ️", callback_data=f"place_{place_id}"))
+    else:
+        row.append(InlineKeyboardButton("💬", callback_data=f"comm_back_{current_index}"))
+    
     if current_index < total_comments - 1:
         row.append(InlineKeyboardButton("➡️", callback_data=f"comm_next_u_{current_index}"))
     markup.row(*row)
@@ -114,12 +120,31 @@ def get_user_comments(user_id, chat_id, message_id, call_id):
     print(comments_ids)
     card_text = create_comment_card(comment_id)
 
+    with get_db_connection() as conn:
+        place_id = get_comment_by_comment_id(conn, comment_id)["place_id"]
+
     print(card_text)
-    markup = create_navigation_keyboard_for_user_comments(0, len(comments_ids))
+    markup = create_navigation_keyboard_for_user_comments(0, len(comments_ids), place_id)
     tb.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
         text=card_text,
+        parse_mode="Markdown",
+        reply_markup=markup,
+        disable_web_page_preview=True
+    )
+
+
+from ya_ai_xd import create_place_card_by_db
+def print_place(user_id, current_index, chat_id, message_id, call_id, place_id):
+    text = create_place_card_by_db(place_id, 1, 1)
+    with get_db_connection() as conn:
+        comment_ids = get_user_request_comment_ids(conn, user_id)
+    markup = create_navigation_keyboard_for_user_comments(current_index, len(comment_ids), -1)
+    tb.edit_message_text(
+        chat_id=chat_id,
+        message_id=message_id,
+        text=text,
         parse_mode="Markdown",
         reply_markup=markup,
         disable_web_page_preview=True
