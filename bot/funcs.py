@@ -49,7 +49,7 @@ def help(message):
     with get_db_connection() as conn:
         prev_message = get_user_message_to_edit(conn, user_id)
 
-    print(f"\tkek sent_massage is {prev_message}")
+    # print(f"\tkek sent_massage is {prev_message}")
     tb.delete_message(user_id, message.message_id)
     tb.edit_message_text("Напиши место, которое тебя интересует или напиши 'случайно', чтобы получить случайное место", chat_id=message.chat.id, message_id=prev_message)
 
@@ -80,14 +80,16 @@ def user_settings(message):
     """получить из бд настройки пользователя, в случае отсуствия, занести дефоль"""
     user_id = message.from_user.id
     user_name = message.from_user.first_name
-    print(message.id)
+    # print(message.id)
+    tb.delete_message(user_id, message.id - 1)
     tb.delete_message(user_id, message.id)
     markup = InlineKeyboardMarkup()
     markup.row_width = 4
     markup.add(InlineKeyboardButton("🗺️WIP", callback_data="distance"),
-               InlineKeyboardButton("⭐", callback_data="rating"),
                InlineKeyboardButton("💬", callback_data="comments"))
-    tb.send_message(user_id, "Тут ты можешь изменить расстояние поиска мест и посмотреть свои оценки и комментарии", reply_markup=markup)
+    sent_message = tb.send_message(user_id, "Тут ты можешь изменить расстояние поиска мест и посмотреть свои оценки и комментарии", reply_markup=markup)
+    with get_db_connection() as conn:
+        upd_user_message_to_edit(conn, user_id, sent_message.id)
 
 def operator(call):
     """реакция на кнопки"""
@@ -127,12 +129,11 @@ def change_distance(message):
     with get_db_connection() as conn:
         upd_user_status(conn, "start")
 
-# from costil import ids
 
 from commet_requests import edit_comment_rating
 from commet_requests import commented_by_user, edit_comment
 from commet_requests import edit_comment_text
-from settings_requests import get_request_place_id
+from settings_requests import get_user_request_ids
 def set_rating(message):
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id - 1)
@@ -144,18 +145,23 @@ def set_rating(message):
     needed_place = int(status[-1]) - 1
 
     with get_db_connection() as conn:
-        place_id = get_request_place_id(conn, user_id, needed_place)
+        ids = get_user_request_ids(conn, user_id)
+    place_id = ids[needed_place]
 
-
-    if message.text.isdigit():
-        print(int(message.text))
+    response = ""
+    if message.text.isdigit() and int(message.text) > 0 and int(message.text) <= 10:
         with get_db_connection() as conn:
             if (commented_by_user(conn, user_id, place_id)):
                 edit_comment_rating(conn, user_id, place_id, int(message.text))
             else:
                 add_comment(conn, user_id, place_id, "NULL", int(message.text))
     else:
-        print("needed to do try exept")
+        sent_massage = tb.send_message(user_id,
+            f"поставьте оценку от 1 до 10")
+        # sleep(1)
+        # tb.delete_message(user_id, sent_massage.id)
+        return
+        
 
     
     sent_massage = tb.send_message(user_id,
@@ -179,7 +185,8 @@ def set_comment(message):
 
     
     with get_db_connection() as conn:
-        place_id = get_request_place_id(conn, user_id, needed_place)
+        ids = get_user_request_ids(conn, user_id)
+        place_id =ids[needed_place] 
         if (commented_by_user(conn, user_id, place_id)):
             edit_comment_text(conn, user_id, place_id, message.text)
         else:

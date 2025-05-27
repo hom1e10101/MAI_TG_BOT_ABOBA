@@ -37,8 +37,11 @@ def message_handler(message):
         place(message)
     elif status == "distance":
         change_distance(message)
+    elif status == "rating":
+        change_distance(message)
+    elif status == "comments":
+        change_distance(message)
     elif status in {"r_1", "r_2", "r_3", "r_4", "r_5"}:
-        print("goes wrong not WW")
         set_rating(message)
     elif status in {"c_1", "c_2", "c_3", "c_4", "c_5"}:
         set_comment(message)
@@ -51,80 +54,173 @@ def location_handler(message):
 
 from ya_ai_xd import create_place_card_by_db
 from places_requests import get_place_by_id
-from settings_requests import get_user_places_ids, get_current_index, upd_current_index
-@tb.callback_query_handler(func=lambda call: call.data.startswith(('prev_', 'next_', 'rate_', 'comment_')))
+from settings_requests import get_user_request_ids, get_current_index, upd_current_index, \
+                upd_user_request_comment_ids, get_user_request_comment_ids, upd_current_comment_index, get_current_comment_index
+from comments import create_comment_card, create_navigation_keyboard_for_comments, get_comments,\
+      get_user_comments, create_navigation_keyboard_for_user_comments
+@tb.callback_query_handler()
 def handle_navigation(call):
-    """Обрабатывает навигацию между местами"""
-    try:
-        user_id = call.from_user.id
-        chat_id = call.message.chat.id
-        message_id = call.message.message_id
-
-        with get_db_connection() as conn:
-            current_index = get_current_index(conn, user_id)
-            places_ids = get_user_places_ids(conn, user_id, 5)
     
-        total_places = len(places_ids)
+    if call.data.startswith(('prev_', 'next_', 'rate_', 'comment_', "back_", "get_comm_")):
+        """Обрабатывает навигацию между местами"""
 
+        try:
+            user_id = call.from_user.id
+            chat_id = call.message.chat.id
+            message_id = call.message.message_id
 
-        # Определяем новую позицию
-        if call.data.startswith('prev_'):
-            new_index = max(0, current_index - 1)
-        elif call.data.startswith('next_'):
-            new_index = min(total_places - 1, current_index + 1)
-        elif call.data.startswith('rate_'):
-            place_index = int(call.data.split('_')[1])
+            with get_db_connection() as conn:
+                current_index = get_current_index(conn, user_id)
+                places_ids = get_user_request_ids(conn, user_id)
+
+            total_places = len(places_ids)
+            print(places_ids)
+
+            # Определяем новую позицию
+            if call.data.startswith('prev_'):
+                new_index = max(0, current_index - 1)
+            elif call.data.startswith('next_'):
+                new_index = min(total_places - 1, current_index + 1)
+            elif call.data.startswith('back_'):
+                new_index = current_index
+            elif call.data.startswith('rate_'):
+                place_index = int(call.data.split('_')[1])
+                
+                place_id = places_ids[place_index]
+                name = ''
+                with get_db_connection() as conn:
+                    name = get_place_by_id(conn, place_id)["name"]
+
+                tb.answer_callback_query(call.id, f"Вы хотите оценить место: {name}")
+
+                with get_db_connection() as conn:
+                    upd_user_status(conn, user_id, f'r_{place_index + 1}')
+                tb.send_message(user_id, "Напишите оценку, которую хотите оставить")
+                return
+            elif call.data.startswith('comment_'):
+                place_index = int(call.data.split('_')[1])
+                
+                place_id = places_ids[place_index]
+                name = ''
+                with get_db_connection() as conn:
+                    name = get_place_by_id(conn, place_id)['name']
+
+                tb.answer_callback_query(call.id, f"Вы хотите оставить комментарий к месту: {name}")
+
+                with get_db_connection() as conn:
+                    upd_user_status(conn, user_id, f'c_{place_index + 1}')
+                tb.send_message(user_id, "Напишите комментарий, который хотите оставить")
+                return
+            elif call.data.startswith("get_comm_"):
+                # print("error piska")
+                place_index = int(call.data.split('_')[2])
+                print(place_index)
+                get_comments(user_id, chat_id, message_id, places_ids[place_index], place_index, call.id)
+                return
+            else:
+                print(call.data)
+                print("error")
+                return
+
+            # Обновляем текущий индекс
+            with get_db_connection() as conn:
+                upd_current_index(conn, user_id, new_index)
             
-            place_id = places_ids[place_index]
-            name = ''
-            with get_db_connection() as conn:
-                name = get_place_by_id(conn, place_id)["name"]
+            place_id = places_ids[new_index]
 
-            tb.answer_callback_query(call.id, f"Вы хотите оценить место: {name}")
+            # Создаем новое сообщение
+            card_text = create_place_card_by_db(place_id, new_index, total_places)
+            markup = create_navigation_keyboard(new_index, total_places)
 
+            tb.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=card_text,
+                parse_mode="Markdown",
+                reply_markup=markup,
+                disable_web_page_preview=True
+            )
+
+            tb.answer_callback_query(call.id)
+        except Exception as e:
+            print(f"Error in handle_navigation: {e}")
+            tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
+    
+    elif call.data.startswith(("comm_prev_", "comm_next_")):
+        """Навигация в комментариях"""
+        try:
+            user_id = call.from_user.id
+            chat_id = call.message.chat.id
+            message_id = call.message.message_id
+
+            if call.data.startswith(('comm_next_u_', 'comm_prev_u_')):
+                current_index = int(call.data.split('_')[3])
+            else:
+                current_index = int(call.data.split('_')[2])
             with get_db_connection() as conn:
-                upd_user_status(conn, user_id, f'r_{place_index + 1}')
-            tb.send_message(user_id, "Напишите оценку, которую хотите оставить")
-            return
-        elif call.data.startswith('comment_'):
-            place_index = int(call.data.split('_')[1])
+                comment_ids = get_user_request_comment_ids(conn, user_id)
+
+            total_comments = len(comment_ids)
+
+            # Определяем новую позицию
+            # call.data.startswith('rate_')
+            if call.data.startswith('comm_prev_'):
+                new_index = max(0, current_index - 1)
+            elif call.data.startswith('comm_next_'):
+                # current_index = int(current_index)
+                new_index = min(total_comments - 1, current_index + 1)
+            else:
+                return
+
+            # Обновляем текущий индекс
+            with get_db_connection() as conn:
+                upd_current_comment_index(conn, user_id, new_index)
             
-            place_id = places_ids[place_index]
-            name = ''
+            comment_id = comment_ids[new_index]
+
+            # Создаем новое сообщение
+            card_text = create_comment_card(comment_id)
+            if call.data.startswith(('comm_next_u_', 'comm_prev_u_')):
+                markup = create_navigation_keyboard_for_user_comments(new_index, total_comments)
+            else:
+                with get_db_connection() as conn:
+                    comm_idx = get_current_index(conn, user_id)
+                markup = create_navigation_keyboard_for_comments(new_index, total_comments, comm_idx)
+
+            tb.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=card_text,
+                parse_mode="Markdown",
+                reply_markup=markup,
+                disable_web_page_preview=True
+            )
+
+            tb.answer_callback_query(call.id)
+        except Exception as e:
+            print(f"Error in handle_navigation: {e}")
+            tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
+    else:
+        """Обрабатывает настройки"""
+        try:
+            user_id = call.from_user.id
+            chat_id = call.message.chat.id
+            message_id = call.message.message_id
+
             with get_db_connection() as conn:
-                name = get_place_by_id(conn, place_id)['name']
+                user_status = get_user_status(conn, user_id)
 
-            tb.answer_callback_query(call.id, f"Вы хотите оставить комментарий к месту: {name}")
-
-            with get_db_connection() as conn:
-                upd_user_status(conn, user_id, f'c_{place_index + 1}')
-            tb.send_message(user_id, "Напишите комментарий, который хотите оставить")
-            return
-        else:
-            return
-
-        # Обновляем текущий индекс
-        with get_db_connection() as conn:
-            upd_current_index(conn, user_id, new_index)
-        
-        place_id = places_ids[new_index]
-
-        # Создаем новое сообщение        
-        card_text = create_place_card_by_db(place_id, new_index, total_places)
-        markup = create_navigation_keyboard(new_index, total_places)
-
-        tb.edit_message_text(
-            chat_id=chat_id,
-            message_id=message_id,
-            text=card_text,
-            parse_mode="Markdown",
-            reply_markup=markup,
-            disable_web_page_preview=True
-        )
-
-        tb.answer_callback_query(call.id)
-    except Exception as e:
-        print(f"Error in handle_navigation: {e}")
-        tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
+            # Определяем новую позицию
+            if call.data.startswith('distance'):
+                with get_db_connection() as conn:
+                    upd_user_status(conn, user_id, "distance")
+            elif call.data.startswith('comments'):
+                print("keke")
+                get_user_comments(user_id, chat_id, message_id, call.id)
+            else:
+                return
+        except Exception as e:
+            print(f"Error in handle_navigation: {e}")
+            tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
 
 tb.infinity_polling()

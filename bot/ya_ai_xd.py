@@ -247,7 +247,6 @@ def create_fallback_data(latitude, longitude, keyword):
     }
 
 
-
 from commet_requests import get_place_rating
 from places_requests import get_place_by_id
 def create_place_card_by_db(place_id, index, total):
@@ -266,7 +265,7 @@ def create_place_card_by_db(place_id, index, total):
     avg_rating = 0
     with get_db_connection() as conn:
         if (get_place_rating(conn, place_id) is not None):
-            avg_rating = float(get_place_rating(conn, place_id))
+            avg_rating = round(float(get_place_rating(conn, place_id)), 1)
 
     card_text = f"🏙️ *{name}*\n" #
     if (avg_rating > 0):
@@ -293,12 +292,15 @@ def create_navigation_keyboard(current_index, total_places):
 
     if current_index < total_places - 1:
         row.append(InlineKeyboardButton("➡️", callback_data=f"next_{current_index}"))
-
     markup.row(*row)
+
+    row2 = []
+    row2.append(InlineKeyboardButton("Отзывы", callback_data=f"get_comm_{current_index}"))
+    markup.row(*row2)
     return markup
 
 
-from settings_requests import upd_request_place_id
+from settings_requests import upd_user_request_ids
 @tb.message_handler(content_types=['location'])
 def handle_location(message):
     """Обрабатывает местоположение пользователя и ищет места поблизости"""
@@ -356,11 +358,9 @@ def handle_location(message):
                     else:
                         now_ind = get_id_by_name_address(conn, name, "", address)
                         places_ids.append(now_ind)
-                print(places_ids)
-
             # Сохраняем данные о местах для пользователя
             with get_db_connection() as conn:
-                upd_request_place_id(conn, user_id, places_ids)
+                upd_user_request_ids(conn, user_id, places_ids)
 
             place_id = places_ids[0]
             card_text = create_place_card_by_db(place_id, 0, len(places_ids))

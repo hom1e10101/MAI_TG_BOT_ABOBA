@@ -41,20 +41,16 @@ def commented_by_user(connection: sqlite3.Connection, user_id, place_id):
     cursor.execute('SELECT comment_id FROM Comments WHERE user_id = ? AND place_id = ?', (user_id, place_id))
     return cursor.fetchone() is not None
 
-# возвращаем 5 комментов с самым высоким рейтингом на это место
 def get_comments_of_place(connection: sqlite3.Connection, place_id):
-    """Gets top 5 comments for place | Выводит 5 лучших комментариев о месте"""
+    """Gets comments ids for place | Выводит id комментариев о месте"""
     cursor = connection.cursor()
     cursor.execute('''
-        SELECT Comments.comment_id, Comments.text, Users.name 
+        SELECT comment_id 
         FROM Comments
-        JOIN Users ON Comments.user_id = Users.user_id 
         WHERE place_id = ?
         ORDER BY rating DESC
-        LIMIT 5
     ''', (place_id,))
-    results = cursor.fetchall()
-    return results
+    return [row[0] for row in cursor.fetchall()]
 
 
 '''изменение в таблице'''
@@ -102,3 +98,16 @@ def edit_comment_text(connection: sqlite3.Connection, user_id, place_id, text):
     comm_id = result[0]
     cursor.execute('UPDATE Comments SET text = ? WHERE comment_id = ?', (text, comm_id))
     connection.commit()
+
+def get_comment_by_comment_id(connection: sqlite3.Connection, comment_id):
+    """Получаем все данные о комментарии по его id"""
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT * FROM Comments WHERE comment_id = ?", 
+        (comment_id,)
+    )
+    if (row := cursor.fetchone()) is not None:
+        columns = [desc[0] for desc in cursor.description]
+        return dict(zip(columns, row))
+    
+    return None
