@@ -120,15 +120,15 @@ def operator(call):
 
 def change_distance(message):
     """меняем дистанцию поиска мест"""
-    if message.isdigit():
-        print(int(message))
+    if (message.text).isdigit():
+        print(int(message.text))
         with get_db_connection() as conn:
-            upd_user_distance(conn, int(message))
+            upd_user_distance(conn, message.from_user.id, (message.text))
     else:
         with get_db_connection() as conn:
-            upd_user_city(conn, message)
+            upd_user_city(conn, message.text)
     with get_db_connection() as conn:
-        upd_user_status(conn, "start")
+        upd_user_status(conn, message.from_user.id,"start")
 
 
 from commet_requests import edit_comment_rating

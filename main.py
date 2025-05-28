@@ -243,6 +243,7 @@ def handle_navigation(call):
             if call.data.startswith('distance'):
                 with get_db_connection() as conn:
                     upd_user_status(conn, user_id, "distance")
+                    tb.send_message(call.from_user.id, "Вы собираетесь изменить расстояние, напишите желаемое в км")
             elif call.data.startswith('comments'):
                 get_user_comments(user_id, chat_id, message_id, call.id)
             elif call.data.startswith('place_'):
