@@ -326,8 +326,8 @@ def handle_location(message):
 
         tb.edit_message_text(f"🔍 Ищем {place_type} поблизости и составляем описания...",
                              chat_id=message.chat.id, message_id=prev_message)
-
-        places_result = search_places_nominatim(latitude, longitude, place_type, get_user_distance(get_db_connection(), user_id))
+        with get_db_connection() as conn:
+            places_result = search_places_nominatim(latitude, longitude, place_type, get_user_distance(conn, user_id))
 
         if places_result and places_result.get('features'):
             places = places_result['features'][:5]
