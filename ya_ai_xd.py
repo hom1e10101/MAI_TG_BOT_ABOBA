@@ -30,11 +30,6 @@ geolocator = Nominatim(
     timeout=10
 )
 
-from costil import ids
-
-# Глобальный словарь для хранения данных о местах для каждого пользователя
-user_places_data = {}
-
 
 def classify_place_type(user_query):
     """Определяет тип места с помощью YandexGPT"""
@@ -252,25 +247,35 @@ def create_fallback_data(latitude, longitude, keyword):
     }
 
 
-def create_place_card(place, index, total):
+from commet_requests import get_place_rating
+from places_requests import get_place_by_id
+def create_place_card_by_db(place_id, index, total):
     """Создает карточку места для отображения"""
-    properties = place.get('properties', {})
+    with get_db_connection() as conn:
+        properties = get_place_by_id(conn, place_id)
     name = properties.get('name', 'Неизвестное место')
     address = properties.get('address', 'Адрес не указан')
     description = properties.get('description', 'Нет описания')
-    coordinates = place.get('geometry', {}).get('coordinates', [])
+    coordinate_x = properties.get('coordinate_x')
+    coordinate_y = properties.get('coordinate_y')
+    coordinates = (coordinate_x, coordinate_y)
     yandex_maps_url = get_yandex_maps_link(address)
+    category_name = properties.get('category_name', 'Нет категории')
 
-    company_metadata = properties.get('CompanyMetaData', {})
-    categories = company_metadata.get('Categories', [])
-    category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
+    avg_rating = 0
+    with get_db_connection() as conn:
+        if (get_place_rating(conn, place_id) is not None):
+            avg_rating = round(float(get_place_rating(conn, place_id)), 1)
 
-    card_text = f"🏙️ *{name}*\n"
-    card_text += f"📍 *Адрес*: {address.split(',')[0]}\n"
-    card_text += f"🔖 *Категория*: {category_name}\n"
-    card_text += f"🧐 *Описание*: {description}\n"
+    card_text = f"🏙️ *{name}*\n" #
+    if (avg_rating > 0):
+        card_text += f"⭐ *Оценка*: {avg_rating}\n" #
+    card_text += f"📍 *Адрес*: {(address)}\n" #
+    card_text += f"🔖 *Категория*: {category_name}\n" #
+    card_text += f"🧐 *Описание*: {description}\n" #
     card_text += f"🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
-    card_text += f"📍 Место {index + 1} из {total}"
+    if (total > 1):
+        card_text += f"📍 Место {index + 1} из {total}"
 
     return card_text
 
@@ -288,11 +293,15 @@ def create_navigation_keyboard(current_index, total_places):
 
     if current_index < total_places - 1:
         row.append(InlineKeyboardButton("➡️", callback_data=f"next_{current_index}"))
-
     markup.row(*row)
+
+    row2 = []
+    row2.append(InlineKeyboardButton("Отзывы", callback_data=f"get_comm_{current_index}"))
+    markup.row(*row2)
     return markup
 
 
+from settings_requests import upd_user_request_ids
 @tb.message_handler(content_types=['location'])
 def handle_location(message):
     """Обрабатывает местоположение пользователя и ищет места поблизости"""
@@ -329,18 +338,8 @@ def handle_location(message):
         if places_result and places_result.get('features'):
             places = places_result['features'][:5]
 
-            # Сохраняем данные о местах для пользователя
-            user_places_data[user_id] = {
-                'places': places,
-                'current_index': 0
-            }
-
-            # Показываем первое место
-            place = places[0]
-            card_text = create_place_card(place, 0, len(places))
-            markup = create_navigation_keyboard(0, len(places))
-
             # Сохраняем ID мест в базу данных
+            places_ids = []
             with get_places_db_connection() as conn:
                 for i, place in enumerate(places):
                     properties = place.get('properties', {})
@@ -348,10 +347,26 @@ def handle_location(message):
                     address = properties.get('address', 'Адрес не указан')
 
                     if place_in_base(conn, name, "", address) == 0:
-                        add_place_to_base(conn, name, "", address)
-                    ids[i] = get_id_by_name_address(conn, name, "", address)
-                print(ids)
+                        description = properties.get('description', 'Нет описания')
+                        coordinates = place.get('geometry', {}).get('coordinates', [])
 
+                        company_metadata = properties.get('CompanyMetaData', {})
+                        categories = company_metadata.get('Categories', [])
+                        category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
+
+                        now_ind = add_place_to_base(conn, name, "", address, description, coordinates[0], coordinates[1], category_name, "")
+                        places_ids.append(now_ind)
+                    else:
+                        now_ind = get_id_by_name_address(conn, name, "", address)
+                        places_ids.append(now_ind)
+            # Сохраняем данные о местах для пользователя
+            with get_db_connection() as conn:
+                upd_user_request_ids(conn, user_id, places_ids)
+
+            place_id = places_ids[0]
+            card_text = create_place_card_by_db(place_id, 0, len(places_ids))
+
+            markup = create_navigation_keyboard(0, len(places))
             tb.edit_message_text(
                 chat_id=message.chat.id,
                 message_id=prev_message,

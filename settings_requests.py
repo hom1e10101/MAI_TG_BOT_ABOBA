@@ -92,7 +92,6 @@ def upd_user_distance(connection: sqlite3.Connection, user_id, distance):
     connection.commit()
 
 
-
 # обновляем последний запрос юзера
 def upd_user_last_request(connection: sqlite3.Connection, user_id, last_request):
     cursor = connection.cursor()
@@ -136,3 +135,103 @@ def get_user_status(connection: sqlite3.Connection, user_id):
     
     result = users.fetchone()
     return result[0] if result else None
+
+
+# обновляем индексы запроса юзера
+def upd_user_request_ids(connection: sqlite3.Connection, user_id, places_ids):
+    cursor = connection.cursor()
+    
+    s = ' '.join(map(str, places_ids))
+    cursor.execute(f"""
+        UPDATE Settings
+        SET request_ids = ?, current_index = 0
+        WHERE user_id = ?
+    """, (s, user_id))
+
+    connection.commit()
+
+
+def get_user_request_ids(connection: sqlite3.Connection, user_id) -> list:
+    """Возвращает список ID мест пользователя"""
+    cursor = connection.cursor()
+    cursor.execute(f"""
+        SELECT request_ids 
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    row = cursor.fetchone()
+    if not row:
+        return []
+    ids = list(map(int, row[0].split()))
+    return ids
+
+# получаем curr_ind
+def get_current_index(connection: sqlite3.Connection, user_id):
+    users = connection.cursor()
+    users.execute(f"""
+        SELECT current_index 
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    result = users.fetchone()
+    return result[0] if result else None
+
+# обновляем curr_ind
+def upd_current_index(connection: sqlite3.Connection, user_id, curr_ind):
+    users = connection.cursor()
+    users.execute(f"""
+        UPDATE Settings SET current_index = ? WHERE user_id = ? 
+    """, (curr_ind, user_id))
+    connection.commit()
+
+
+# обновляем индексы запроса юзера
+def upd_user_request_comment_ids(connection: sqlite3.Connection, user_id, comment_ids):
+    cursor = connection.cursor()
+    
+    s = ' '.join(map(str, comment_ids))
+    cursor.execute(f"""
+        UPDATE Settings
+        SET request_comment_ids = ?, current_comment_index = 0
+        WHERE user_id = ?
+    """, (s, user_id))
+
+    connection.commit()
+
+
+def get_user_request_comment_ids(connection: sqlite3.Connection, user_id) -> list:
+    """Возвращает список ID мест пользователя"""
+    cursor = connection.cursor()
+    cursor.execute(f"""
+        SELECT request_comment_ids
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    row = cursor.fetchone()
+    if not row:
+        return []
+    ids = list(map(int, row[0].split()))
+    return ids
+
+# получаем curr_ind
+def get_current_comment_index(connection: sqlite3.Connection, user_id):
+    users = connection.cursor()
+    users.execute(f"""
+        SELECT current_comment_index 
+        FROM Settings 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    result = users.fetchone()
+    return result[0] if result else None
+
+# обновляем curr_ind
+def upd_current_comment_index(connection: sqlite3.Connection, user_id, curr_ind):
+    users = connection.cursor()
+    users.execute(f"""
+        UPDATE Settings SET current_comment_index = ? WHERE user_id = ? 
+    """, (curr_ind, user_id))
+    connection.commit()
