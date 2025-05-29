@@ -69,6 +69,7 @@ def edit_comment(connection: sqlite3.Connection, user_id, place_id, text):
     result = cursor.fetchone()
     if result == None:
         print("нет такого коммента")
+        return
     comm_id = result[0]
     cursor.execute('UPDATE Comments SET text = ? WHERE comment_id = ?', (text, comm_id))
     connection.commit()
@@ -82,6 +83,7 @@ def edit_comment_rating(connection: sqlite3.Connection, user_id, place_id, ratin
     result = cursor.fetchone()
     if result == None:
         print("нет такого коммента")
+        return
     comm_id = result[0]
     cursor.execute('UPDATE Comments SET rating = ? WHERE comment_id = ?', (rating, comm_id))
     connection.commit()
@@ -95,6 +97,7 @@ def edit_comment_text(connection: sqlite3.Connection, user_id, place_id, text):
     result = cursor.fetchone()
     if result == None:
         print("нет такого коммента")
+        return
     comm_id = result[0]
     cursor.execute('UPDATE Comments SET text = ? WHERE comment_id = ?', (text, comm_id))
     connection.commit()
@@ -111,3 +114,17 @@ def get_comment_by_comment_id(connection: sqlite3.Connection, comment_id):
         return dict(zip(columns, row))
     
     return None
+
+def delete_comment(connection: sqlite3.Connection, comment_id):
+    """delets comment | удаляет коммент"""
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT 1 FROM Comments WHERE comment_id = ?", (comment_id,))
+    result = cursor.fetchone()
+    if result == None:
+        print("нет такого коммента")
+        return
+    cursor.execute(
+        f"DELETE FROM Comments WHERE comment_id = ?", 
+        (comment_id,)
+    )
+    connection.commit()

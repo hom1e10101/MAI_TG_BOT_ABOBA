@@ -7,22 +7,16 @@ from geopy.geocoders import Nominatim
 from telebot.storage import StateMemoryStorage
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from funcs import get_yandex_maps_link
-
-from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role
-
-from settings_requests import get_user_message_to_edit, upd_user_message_to_edit, get_user_city, upd_user_city, \
-    get_user_distance, upd_user_distance, get_user_last_request, upd_user_last_request
-
+from users_requests import get_db_connection
+from settings_requests import get_user_message_to_edit, get_user_last_request, upd_user_request_ids, get_user_distance
 from secret import yandex_url, yandex_api, tg_api
+from places_requests import add_place_to_base, place_in_base, get_places_db_connection, get_id_by_name_address, \
+    get_place_by_id
+from commet_requests import get_place_rating
 
 apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
-
-from places_requests import add_place_to_base
-from places_requests import place_in_base
-from places_requests import get_places_db_connection
-from places_requests import get_id_by_name_address
 
 # Инициализация геокодера Nominatim с правильными параметрами
 geolocator = Nominatim(
@@ -145,11 +139,10 @@ def generate_place_description(place_name, place_type, place_address):
 
     return "Интересное место, которое стоит посетить."
 
-
-def search_places_nominatim(latitude, longitude, place_type=None, radius=5000):
+def search_places_nominatim(latitude, longitude, place_type=None, radius=5):
     """Ищет места поблизости с помощью Nominatim (OpenStreetMap)"""
     try:
-        radius_deg = radius / 111000
+        radius_deg = radius / 111
         south = latitude - radius_deg
         north = latitude + radius_deg
         west = longitude - radius_deg
@@ -247,34 +240,38 @@ def create_fallback_data(latitude, longitude, keyword):
     }
 
 
-from commet_requests import get_place_rating
-from places_requests import get_place_by_id
 def create_place_card_by_db(place_id, index, total):
     """Создает карточку места для отображения"""
     with get_db_connection() as conn:
         properties = get_place_by_id(conn, place_id)
+
     name = properties.get('name', 'Неизвестное место')
     address = properties.get('address', 'Адрес не указан')
     description = properties.get('description', 'Нет описания')
     coordinate_x = properties.get('coordinate_x')
     coordinate_y = properties.get('coordinate_y')
-    coordinates = (coordinate_x, coordinate_y)
-    yandex_maps_url = get_yandex_maps_link(address)
     category_name = properties.get('category_name', 'Нет категории')
+
+    # Используем координаты для более точного позиционирования
+    yandex_maps_url = get_yandex_maps_link(
+        address=address,
+        longitude=coordinate_x,
+        latitude=coordinate_y
+    )
 
     avg_rating = 0
     with get_db_connection() as conn:
-        if (get_place_rating(conn, place_id) is not None):
+        if get_place_rating(conn, place_id) is not None:
             avg_rating = round(float(get_place_rating(conn, place_id)), 1)
 
-    card_text = f"🏙️ *{name}*\n" #
-    if (avg_rating > 0):
-        card_text += f"⭐ *Оценка*: {avg_rating}\n" #
-    card_text += f"📍 *Адрес*: {(address)}\n" #
-    card_text += f"🔖 *Категория*: {category_name}\n" #
-    card_text += f"🧐 *Описание*: {description}\n" #
+    card_text = f"🏙️ *{name}*\n"
+    if avg_rating > 0:
+        card_text += f"⭐ *Оценка*: {avg_rating}\n"
+    card_text += f"📍 *Адрес*: {address}\n"
+    card_text += f"🔖 *Категория*: {category_name}\n"
+    card_text += f"🧐 *Описание*: {description}\n"
     card_text += f"🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
-    if (total > 1):
+    if total > 1:
         card_text += f"📍 Место {index + 1} из {total}"
 
     return card_text
@@ -301,7 +298,7 @@ def create_navigation_keyboard(current_index, total_places):
     return markup
 
 
-from settings_requests import upd_user_request_ids
+
 @tb.message_handler(content_types=['location'])
 def handle_location(message):
     """Обрабатывает местоположение пользователя и ищет места поблизости"""
@@ -332,8 +329,8 @@ def handle_location(message):
 
         tb.edit_message_text(f"🔍 Ищем {place_type} поблизости и составляем описания...",
                              chat_id=message.chat.id, message_id=prev_message)
-
-        places_result = search_places_nominatim(latitude, longitude, place_type)
+        with get_db_connection() as conn:
+            places_result = search_places_nominatim(latitude, longitude, place_type, get_user_distance(conn, user_id))
 
         if places_result and places_result.get('features'):
             places = places_result['features'][:5]

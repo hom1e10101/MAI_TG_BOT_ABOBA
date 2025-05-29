@@ -2,5 +2,7 @@
 
 1. main.py - вызов функций при различных запросах userа
 2. func.py - тело функций, вызываемых в main.py
-3. users_requests.py - функции для различных запросов в БД users
+3. users_requests.py - функции для различных запросов в таблицу users
 4. ya_ai_xd.py - запросы в YandexGPT
+5. commet_requests - запросы в таблицу Comments
+6. comments - функции для работы с комментариями (вывод и т.п.)

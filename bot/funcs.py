@@ -28,7 +28,7 @@ def start(message):
     tb.delete_message(user_id, message_id=message.id)
 
     with get_db_connection() as conn:
-        add_user_to_base(conn, user_id, user_name)
+        add_user_to_base(conn, user_id, user_name, message.from_user.username)
         add_user_settings(conn, user_id)
     
     with get_db_connection() as conn:
@@ -49,9 +49,8 @@ def help(message):
     with get_db_connection() as conn:
         prev_message = get_user_message_to_edit(conn, user_id)
 
-    # print(f"\tkek sent_massage is {prev_message}")
     tb.delete_message(user_id, message.message_id)
-    tb.edit_message_text("Напиши место, которое тебя интересует или напиши 'случайно', чтобы получить случайное место", chat_id=message.chat.id, message_id=prev_message)
+    tb.edit_message_text("Напиши место которое тебя интересует, в случае наличия вопросов, пиши @flovvey36", chat_id=message.chat.id, message_id=prev_message)
 
 def place(message):
     """Gets user"s request for place | Получает запрос пользователя на место"""
@@ -92,6 +91,27 @@ def user_settings(message):
     with get_db_connection() as conn:
         upd_user_message_to_edit(conn, user_id, sent_message.id)
 
+from users_requests import get_user_id_by_user_name
+def add_moder(message):
+    user_id = message.from_user.id
+    username = message.text[1:]
+    
+    tb.delete_message(user_id, message.id - 1)
+    tb.delete_message(user_id, message.id)
+    with get_db_connection() as conn:
+        new_user_id = get_user_id_by_user_name(conn, username)
+    if (new_user_id is not None):
+        sent_message = tb.send_message(user_id, "Юзер повышен")
+        with get_db_connection() as conn:
+            upd_user_role(conn, new_user_id, "moderator")
+    else:
+        sent_message = tb.send_message(user_id, "Ошибка: юзер с таким юзернеймом не найден")
+    with get_db_connection() as conn:
+        upd_user_status(conn, message.from_user.id, "start")
+    sleep(1)
+    print(username)
+    tb.delete_message(user_id, sent_message.id)
+
 def operator(call):
     """реакция на кнопки"""
     user_id = call.from_user.id
@@ -99,7 +119,6 @@ def operator(call):
         with get_db_connection() as conn:
             upd_user_status(conn, "distance")
         tb.send_message(user_id, "Напиши желаемое расстояние поиска числом в километрах или название города")
-        #реализуй try except для того чтобы узнать расстояние / город
     if call.data == "rating":
         with get_db_connection() as conn:
             upd_user_status(conn, "rating")
@@ -119,16 +138,22 @@ def operator(call):
 
 
 def change_distance(message):
-    """меняем дистанцию поиска мест"""
-    if message.isdigit():
-        print(int(message))
+    """Меняем дистанцию поиска мест"""
+    tb.delete_message(message.from_user.id, message.id - 1)
+    tb.delete_message(message.from_user.id, message.id)
+    if (message.text).isdigit():
+        print(int(message.text))
         with get_db_connection() as conn:
-            upd_user_distance(conn, int(message))
+            upd_user_distance(conn, message.from_user.id, (message.text))
+        sent_message = tb.send_message(message.from_user.id, f"Твое новое расстояние поиска {message.text} км!")
+        sleep(1)
+        tb.delete_message(message.from_user.id, sent_message.id)
     else:
         with get_db_connection() as conn:
-            upd_user_city(conn, message)
+            upd_user_city(conn, message.text)
     with get_db_connection() as conn:
-        upd_user_status(conn, "start")
+        upd_user_status(conn, message.from_user.id,"start")
+
 
 
 from commet_requests import edit_comment_rating
@@ -159,11 +184,9 @@ def set_rating(message):
     else:
         sent_massage = tb.send_message(user_id,
             f"поставьте оценку от 1 до 10")
-        # sleep(1)
-        # tb.delete_message(user_id, sent_massage.id)
+        sleep(1)
+        tb.delete_message(user_id, sent_massage.id)
         return
-        
-
     
     sent_massage = tb.send_message(user_id,
             f"твоя оценка учтена)")
@@ -202,14 +225,32 @@ def set_comment(message):
     with get_db_connection() as conn:
         upd_user_status(conn, user_id, "start")
 
-def get_yandex_maps_link(address):
-    # Убираем лишние пробелы и кодируем только нужные символы
-    clean_address = (address
-                     .replace("ул.", "улица")
-                     .replace("д.", "дом")
-                     .replace("корп.", "корпус")
-                     .strip())
+def get_yandex_maps_link(address=None, longitude=None, latitude=None):
+    """
+    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
+    Если координаты не указаны, использует адрес.
+    """
+    if longitude is not None and latitude is not None:
+        # Используем точные координаты
+        return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
+    else:
+        # Fallback на адрес (менее точный)
+        clean_address = (address
+                         .replace("ул.", "улица")
+                         .replace("д.", "дом")
+                         .replace("корп.", "корпус")
+                         .strip())
+        encoded_address = urllib.parse.quote_plus(clean_address)
+        return f"https://yandex.ru/maps/?text={encoded_address}"
 
-    # Кодируем для URL (но не допускаем дублирование %20)
-    encoded_address = urllib.parse.quote_plus(clean_address)
-    return f"https://yandex.ru/maps/?text={encoded_address}"
+def v1(message):
+    user_id = message.from_user.id
+    tb.send_message(user_id, "Machine, turn back now. The layers of this palace are not for your kind. Turn back, or you will be crossing the Will of GOD... Your choice is made. As the righteous hand of the Father, I shall REND YOU APART, and you will become inanimate once more.")
+    sleep(15)
+    tb.send_message(user_id, "BEHOLD! THE POWER OF AN ANGEL!")
+    sleep(4)
+    tb.send_message(user_id, "What? How can this be? Bested by this... this thing? You insignificant FUCK! THIS IS NOT OVER! May your woes be many, and your days few!")
+    sleep(12)
+    tb.send_message(user_id, "Machine, I know you're here. I can smell the insolent stench of your bloodstained hands. I await you down below. Come to me.")
+    sleep(10)
+    tb.send_message(user_id, "Limbo, Lust, all gone... With Gluttony soon to follow. Your kind know nothing but hunger; purged all life on the upper layers, and yet they remain unsatiated... As do you. You've taken everything from me, machine. And now all that remains is PERFECT HATRED")
