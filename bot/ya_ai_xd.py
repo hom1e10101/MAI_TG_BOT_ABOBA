@@ -1,4 +1,6 @@
 import time
+import urllib
+
 import telebot
 import json
 import os
@@ -6,7 +8,6 @@ import requests
 from geopy.geocoders import Nominatim
 from telebot.storage import StateMemoryStorage
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from funcs import get_yandex_maps_link
 from users_requests import get_db_connection
 from settings_requests import get_user_message_to_edit, get_user_last_request, upd_user_request_ids, get_user_distance
 from secret import yandex_url, yandex_api, tg_api
@@ -138,6 +139,71 @@ def generate_place_description(place_name, place_type, place_address):
         print(f"Error generating description: {e}")
 
     return "Интересное место, которое стоит посетить."
+
+
+def get_yandex_maps_link(address=None, longitude=None, latitude=None):
+    """
+    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
+    Если координаты не указаны, использует адрес.
+    """
+    if longitude is not None and latitude is not None:
+        # Используем точные координаты
+        return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
+    else:
+        # Fallback на адрес (менее точный)
+        clean_address = (address
+                         .replace("ул.", "улица")
+                         .replace("д.", "дом")
+                         .replace("корп.", "корпус")
+                         .strip())
+        encoded_address = urllib.parse.quote_plus(clean_address)
+        return f"https://yandex.ru/maps/?text={encoded_address}"
+
+
+def is_text_normal_yagpt(text):
+    # Четкий промпт с требованием отвечать только "true" или "false"
+    prompt = f"""
+    Содержит ли следующий текст ненормативную лексику любого рода, в том числе оскорбления, нацизм и тд, 
+    (включая замаскированные варианты типа 'п1д0р', 'piдор')? 
+    Отвечай строго одним словом: 'true' если текст чистый, 'false' если содержит нарушения.
+
+    Текст:  {text}
+    """
+    API_Key = yandex_api
+    url = yandex_url
+    headers = {
+        "Authorization": f"Api-Key {API_Key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "modelUri": f"gpt://b1gaa9e1j7g69a60a8l3/yandexgpt",
+        "completionOptions": {
+            "stream": False,
+            "temperature": 0.1,  # Минимизируем случайные ответы
+            "maxTokens": 100  # Ограничиваем длину ответа
+        },
+        "messages": [
+            {
+                "role": "system",
+                "text": "Ты фильтр ненормативной лексики. Отвечай ТОЛЬКО 'true' или 'false'."
+            },
+            {
+                "role": "user",
+                "text": prompt
+            }
+        ]
+    }
+
+
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()
+    answer = ((response.json()["result"]["alternatives"][0]["message"]["text"].strip().lower()).split(' ')[-1]).split('.')[0]
+    # Преобразуем строковый ответ в boolean
+    if answer == "true":
+        return True
+    else:
+        return False
+
 
 def search_places_nominatim(latitude, longitude, place_type=None, radius=5):
     """Ищет места поблизости с помощью Nominatim (OpenStreetMap)"""

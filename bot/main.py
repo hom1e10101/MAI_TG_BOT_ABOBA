@@ -22,7 +22,7 @@ apishka = os.environ.get("TELEGRAM_API_TOKEN", tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 tb.remove_webhook()
-# tb.send_message(419737412, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
+tb.send_message(419737412, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
 tb.send_message(1765684196, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
 tb.send_message(1458457789, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
 
@@ -131,8 +131,7 @@ def handle_navigation(call):
                 places_ids = get_user_request_ids(conn, user_id)
 
             total_places = len(places_ids)
-            print(places_ids)
-
+            
             # Определяем новую позицию
             if call.data.startswith('prev_'):
                 new_index = max(0, current_index - 1)
@@ -169,7 +168,6 @@ def handle_navigation(call):
                 tb.send_message(user_id, "Напишите комментарий, который хотите оставить")
                 return
             elif call.data.startswith("get_comm_"):
-                # print("error piska")
                 place_index = int(call.data.split('_')[2])
                 get_comments(user_id, chat_id, message_id, places_ids[place_index], place_index, call.id)
                 return
@@ -197,7 +195,6 @@ def handle_navigation(call):
 
             tb.answer_callback_query(call.id)
         except Exception as e:
-            print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
 
     elif call.data.startswith(("comm_prev_", "comm_next_", "comm_back_")):
@@ -217,11 +214,9 @@ def handle_navigation(call):
             total_comments = len(comment_ids)
 
             # Определяем новую позицию
-            # call.data.startswith('rate_')
             if call.data.startswith('comm_prev_'):
                 new_index = max(0, current_index - 1)
             elif call.data.startswith('comm_next_'):
-                # current_index = int(current_index)
                 new_index = min(total_comments - 1, current_index + 1)
             elif call.data.startswith('comm_back_'):
                 new_index = current_index
@@ -233,7 +228,6 @@ def handle_navigation(call):
                 upd_current_comment_index(conn, user_id, new_index)
 
             comment_id = comment_ids[new_index]
-            print(comment_ids)
 
             # Создаем новое сообщение
             card_text = create_comment_card(comment_id)
@@ -257,7 +251,6 @@ def handle_navigation(call):
 
             tb.answer_callback_query(call.id)
         except Exception as e:
-            print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
     elif call.data.startswith(("rem_")):
 
@@ -272,7 +265,7 @@ def handle_navigation(call):
             tb.answer_callback_query(call.id, "Коммент удален")
 
         except Exception as e:
-            print(f"Error in handle_navigation: {e}")
+            # print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
     else:
         """Обрабатывает настройки"""
@@ -296,7 +289,7 @@ def handle_navigation(call):
             else:
                 return
         except Exception as e:
-            print(f"Error in handle_navigation: {e}")
+            # print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
 
 

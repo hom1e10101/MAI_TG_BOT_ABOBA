@@ -9,6 +9,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardBu
 from telebot.handler_backends import State, StatesGroup
 from telebot.storage import StateMemoryStorage
 
+from ya_ai_xd import is_text_normal_yagpt
 from users_requests import get_db_connection, add_user_to_base, upd_user_name, get_user_role, upd_user_role
 
 from settings_requests import add_user_settings, get_user_message_to_edit, upd_user_message_to_edit, get_user_city, upd_user_city, get_user_distance, upd_user_distance, get_user_last_request, upd_user_last_request
@@ -25,6 +26,9 @@ def start(message):
     """Sends start message | Отправляет стартовое сообщение"""
     user_id = message.from_user.id
     user_name = message.from_user.first_name
+    
+    sent_massage = tb.send_message(user_id,
+            f"Привет, {user_name}! Я бот который поможет тебе открыть новые места в городе! Чтобы узнать что я умею, напиши /help")
     tb.delete_message(user_id, message_id=message.id)
 
     with get_db_connection() as conn:
@@ -33,10 +37,7 @@ def start(message):
     
     with get_db_connection() as conn:
         upd_user_status(conn, user_id, "start")
-    
-    sent_massage = tb.send_message(user_id,
-            f"Привет, {user_name}! Я бот который поможет тебе открыть новые места в городе! Чтобы узнать что я умею, напиши /help")
-    print(f"sent_massage is {sent_massage.id}")
+
     with get_db_connection() as conn:
         upd_user_message_to_edit(conn, user_id, sent_massage.id)
 
@@ -49,8 +50,8 @@ def help(message):
     with get_db_connection() as conn:
         prev_message = get_user_message_to_edit(conn, user_id)
 
-    tb.delete_message(user_id, message.message_id)
     tb.edit_message_text("Напиши место которое тебя интересует, в случае наличия вопросов, пиши @flovvey36", chat_id=message.chat.id, message_id=prev_message)
+    tb.delete_message(user_id, message.message_id)
 
 def place(message):
     """Gets user"s request for place | Получает запрос пользователя на место"""
@@ -79,20 +80,20 @@ def user_settings(message):
     """получить из бд настройки пользователя, в случае отсуствия, занести дефоль"""
     user_id = message.from_user.id
     user_name = message.from_user.first_name
-    # print(message.id)
     with get_db_connection() as conn:
         tb.delete_message(user_id, get_user_message_to_edit(conn, user_id))
-    tb.delete_message(user_id, message.id)
     markup = InlineKeyboardMarkup()
     markup.row_width = 4
     markup.add(InlineKeyboardButton("🗺️WIP", callback_data="distance"),
                InlineKeyboardButton("💬", callback_data="comments"))
     sent_message = tb.send_message(user_id, "Тут ты можешь изменить расстояние поиска мест и посмотреть свои оценки и комментарии", reply_markup=markup)
+    tb.delete_message(user_id, message.id)
     with get_db_connection() as conn:
         upd_user_message_to_edit(conn, user_id, sent_message.id)
 
 from users_requests import get_user_id_by_user_name
 def add_moder(message):
+    """Добавляем модера"""
     user_id = message.from_user.id
     username = message.text[1:]
     
@@ -109,7 +110,6 @@ def add_moder(message):
     with get_db_connection() as conn:
         upd_user_status(conn, message.from_user.id, "start")
     sleep(1)
-    print(username)
     tb.delete_message(user_id, sent_message.id)
 
 def operator(call):
@@ -142,7 +142,6 @@ def change_distance(message):
     tb.delete_message(message.from_user.id, message.id - 1)
     tb.delete_message(message.from_user.id, message.id)
     if (message.text).isdigit():
-        print(int(message.text))
         with get_db_connection() as conn:
             upd_user_distance(conn, message.from_user.id, (message.text))
         sent_message = tb.send_message(message.from_user.id, f"Твое новое расстояние поиска {message.text} км!")
@@ -161,6 +160,7 @@ from commet_requests import commented_by_user, edit_comment
 from commet_requests import edit_comment_text
 from settings_requests import get_user_request_ids
 def set_rating(message):
+    """Добавляем оценку места"""
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id - 1)
     tb.delete_message(user_id, message.id)
@@ -196,52 +196,42 @@ def set_rating(message):
     with get_db_connection() as conn:
         upd_user_status(conn, user_id, "start")
 
+
 def set_comment(message):
+    """Добавляем комментарий"""
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id - 1)
     tb.delete_message(user_id, message.id)
 
     with get_db_connection() as conn:
         status = get_user_status(conn, user_id)
-    
-    needed_place = int(status[-1]) - 1
-    # place_id = ids[needed_place]
 
-    
+    needed_place = int(status[-1]) - 1
+
     with get_db_connection() as conn:
         ids = get_user_request_ids(conn, user_id)
-        place_id =ids[needed_place] 
-        if (commented_by_user(conn, user_id, place_id)):
-            edit_comment_text(conn, user_id, place_id, message.text)
+        place_id = ids[needed_place]
+        proverka = is_text_normal_yagpt(message.text)
+        if proverka == True:
+            if (commented_by_user(conn, user_id, place_id)):
+                edit_comment_text(conn, user_id, place_id, message.text)
+                sent_message = (tb.send_message(message.from_user.id, 'Комментарий обновлен'))
+                sleep(1)
+                tb.delete_message(message.from_user.id, sent_message.id)
+            else:
+                add_comment(conn, user_id, place_id, message.text, 0)
+                sent_message = (tb.send_message(message.from_user.id, 'Комментарий добавлен'))
+                sleep(1)
+                tb.delete_message(message.from_user.id, sent_message.id)
+            with get_db_connection() as conn:
+                upd_user_status(conn, user_id, "start")
         else:
-            add_comment(conn, user_id, place_id, message.text, 0)
-    
-    
-    sent_massage = tb.send_message(user_id,
-            f"твой комментарий учтен)")
-    sleep(1)
-    tb.delete_message(user_id, sent_massage.id)
-    
-    with get_db_connection() as conn:
-        upd_user_status(conn, user_id, "start")
+            sent_message = (tb.send_message(message.from_user.id,
+                                            "Грешник, твой комментарий содержит ненормативную лексику. Бог тобой не доволен, переписывай"))
+            sleep(2)
+            tb.delete_message(message.from_user.id, sent_message.id)
 
-def get_yandex_maps_link(address=None, longitude=None, latitude=None):
-    """
-    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
-    Если координаты не указаны, использует адрес.
-    """
-    if longitude is not None and latitude is not None:
-        # Используем точные координаты
-        return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
-    else:
-        # Fallback на адрес (менее точный)
-        clean_address = (address
-                         .replace("ул.", "улица")
-                         .replace("д.", "дом")
-                         .replace("корп.", "корпус")
-                         .strip())
-        encoded_address = urllib.parse.quote_plus(clean_address)
-        return f"https://yandex.ru/maps/?text={encoded_address}"
+
 
 def v1(message):
     user_id = message.from_user.id

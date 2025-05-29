@@ -15,8 +15,8 @@ def get_db_connection():
 
 
 def add_user_settings(connection: sqlite3.Connection, user_id):
+    """Добавляем юзера в таблицу сеттингс"""
     cursor = connection.cursor()
-
     cursor.execute('''
             INSERT INTO Settings (user_id)
             VALUES (?)
@@ -73,6 +73,7 @@ def upd_user_city(connection: sqlite3.Connection, user_id, city):
 
 # получаем distance юзера
 def get_user_distance(connection: sqlite3.Connection, user_id):
+    """Получаем желаемую дистанцию поиска"""
     users = connection.cursor()
     users.execute("""
         SELECT distance 
@@ -85,6 +86,7 @@ def get_user_distance(connection: sqlite3.Connection, user_id):
 
 # обновляем city юзера
 def upd_user_distance(connection: sqlite3.Connection, user_id, distance):
+    """Обновляем желаемую дистанцию поиска"""
     users = connection.cursor()
     users.execute("""
         UPDATE Settings SET distance = ? WHERE user_id = ? 
@@ -94,6 +96,7 @@ def upd_user_distance(connection: sqlite3.Connection, user_id, distance):
 
 # обновляем последний запрос юзера
 def upd_user_last_request(connection: sqlite3.Connection, user_id, last_request):
+    """Обновляем последний запрос пользователя"""
     cursor = connection.cursor()
     cursor.execute(
         "UPDATE Settings SET last_request = ? WHERE user_id = ?",
@@ -103,6 +106,7 @@ def upd_user_last_request(connection: sqlite3.Connection, user_id, last_request)
 
 # получаем последний запрос пользователя
 def get_user_last_request(connection: sqlite3.Connection, user_id):
+    """Получаем последний запрос пользователя"""
     users = connection.cursor()
     users.execute("""
         SELECT last_request 
@@ -117,6 +121,7 @@ def get_user_last_request(connection: sqlite3.Connection, user_id):
 
 # обновляем последний запрос юзера
 def upd_user_status(connection: sqlite3.Connection, user_id, status):
+    """Обновляем статус пользователя"""
     cursor = connection.cursor()
     cursor.execute(
         "UPDATE Settings SET status = ? WHERE user_id = ?",
@@ -126,6 +131,7 @@ def upd_user_status(connection: sqlite3.Connection, user_id, status):
 
 # получаем последний запрос пользователя
 def get_user_status(connection: sqlite3.Connection, user_id):
+    """Получаем статус пользователя"""
     users = connection.cursor()
     users.execute("""
         SELECT status 
@@ -139,6 +145,7 @@ def get_user_status(connection: sqlite3.Connection, user_id):
 
 # обновляем индексы запроса юзера
 def upd_user_request_ids(connection: sqlite3.Connection, user_id, places_ids):
+    """Обновляем запрашиваемые ids мест"""
     cursor = connection.cursor()
     
     s = ' '.join(map(str, places_ids))
@@ -168,6 +175,7 @@ def get_user_request_ids(connection: sqlite3.Connection, user_id) -> list:
 
 # получаем curr_ind
 def get_current_index(connection: sqlite3.Connection, user_id):
+    """Получаем нынешний индекс"""
     users = connection.cursor()
     users.execute(f"""
         SELECT current_index 
@@ -180,6 +188,7 @@ def get_current_index(connection: sqlite3.Connection, user_id):
 
 # обновляем curr_ind
 def upd_current_index(connection: sqlite3.Connection, user_id, curr_ind):
+    """Обновляем индекс"""
     users = connection.cursor()
     users.execute(f"""
         UPDATE Settings SET current_index = ? WHERE user_id = ? 
@@ -189,6 +198,7 @@ def upd_current_index(connection: sqlite3.Connection, user_id, curr_ind):
 
 # обновляем индексы запроса юзера
 def upd_user_request_comment_ids(connection: sqlite3.Connection, user_id, comment_ids):
+    """Обновляем индекс комментариев"""
     cursor = connection.cursor()
     
     s = ' '.join(map(str, comment_ids))
@@ -218,6 +228,7 @@ def get_user_request_comment_ids(connection: sqlite3.Connection, user_id) -> lis
 
 # получаем curr_ind
 def get_current_comment_index(connection: sqlite3.Connection, user_id):
+    """Получаем индекс комментариев"""
     users = connection.cursor()
     users.execute(f"""
         SELECT current_comment_index 
@@ -230,6 +241,7 @@ def get_current_comment_index(connection: sqlite3.Connection, user_id):
 
 # обновляем curr_ind
 def upd_current_comment_index(connection: sqlite3.Connection, user_id, curr_ind):
+    """Обновляем индекс комментариев"""
     users = connection.cursor()
     users.execute(f"""
         UPDATE Settings SET current_comment_index = ? WHERE user_id = ? 

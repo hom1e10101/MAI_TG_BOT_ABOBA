@@ -63,14 +63,13 @@ def create_comment_card(comment_id):
                 text += "\n"
             if comment["text"] != "NULL":
                 text += comment["text"]
-            print(text)
             return text
         else: return "нет такого комментария"
 
 from settings_requests import get_user_request_comment_ids, upd_user_request_comment_ids
 from commet_requests import get_comments_of_place
 def get_comments(user_id, chat_id, message_id, place_id, place_idx, call_id):
-    """Создает клавиатуру для навигации между комментариями"""
+    """Получаем комментарии на место"""
     with get_db_connection() as conn:
         comments_ids = get_comments_of_place(conn, place_id)
 
@@ -96,8 +95,7 @@ def get_comments(user_id, chat_id, message_id, place_id, place_idx, call_id):
 
 
 def create_navigation_keyboard_for_user_comments(current_index, total_comments, place_id):
-    """Создает клавиатуру для навигации между местами"""
-    print("lelelelelel")
+    """Создает клавиатуру для навигации между комментариями пользователя"""
     markup = InlineKeyboardMarkup()
     row = []
 
@@ -117,6 +115,7 @@ def create_navigation_keyboard_for_user_comments(current_index, total_comments, 
 
 from commet_requests import get_user_comment_ids
 def get_user_comments(user_id, chat_id, message_id, call_id):
+    """Получаем комментарии пользователя"""
     with get_db_connection() as conn:
         comments_ids = get_user_comment_ids(conn, user_id)
 
@@ -128,13 +127,11 @@ def get_user_comments(user_id, chat_id, message_id, call_id):
         upd_user_request_comment_ids(conn, user_id, comments_ids)
 
     comment_id = comments_ids[0]
-    print(comments_ids)
     card_text = create_comment_card(comment_id)
 
     with get_db_connection() as conn:
         place_id = get_comment_by_comment_id(conn, comment_id)["place_id"]
 
-    print(card_text)
     markup = create_navigation_keyboard_for_user_comments(0, len(comments_ids), place_id)
     tb.edit_message_text(
         chat_id=chat_id,
@@ -148,6 +145,7 @@ def get_user_comments(user_id, chat_id, message_id, call_id):
 
 from ya_ai_xd import create_place_card_by_db
 def print_place(user_id, current_index, chat_id, message_id, call_id, place_id):
+    """Выводит место, на которое оставлял комментарий юзер"""
     text = create_place_card_by_db(place_id, 1, 1)
     with get_db_connection() as conn:
         comment_ids = get_user_request_comment_ids(conn, user_id)
