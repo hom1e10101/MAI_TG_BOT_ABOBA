@@ -19,25 +19,13 @@ apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 
-
-
 # Инициализация геокодера Nominatim с правильными параметрами
 geolocator = Nominatim(
     user_agent="TelegramPlacesBot/1.0 (https://t.me/New_places_fr_bot)",
     timeout=10
 )
 
-def get_yandex_maps_link(address):
-    # Убираем лишние пробелы и кодируем только нужные символы
-    clean_address = (address
-                     .replace("ул.", "улица")
-                     .replace("д.", "дом")
-                     .replace("корп.", "корпус")
-                     .strip())
 
-    # Кодируем для URL (но не допускаем дублирование %20)
-    encoded_address = urllib.parse.quote_plus(clean_address)
-    return f"https://yandex.ru/maps/?text={encoded_address}"
 def classify_place_type(user_query):
     """Определяет тип места с помощью YandexGPT"""
     prompt = f"""Определи тип места для запроса пользователя: "{user_query}".
@@ -57,7 +45,6 @@ def classify_place_type(user_query):
 - tourist_attraction (достопримечательности)
 - supermarket (супермаркеты)
 - cafe (кафе, кофейни)
-и так далее, сделай так чтобы любое предложение можно было классифицировать
 
 Верни только одно ключевое слово типа места, без объяснений."""
 
@@ -153,7 +140,23 @@ def generate_place_description(place_name, place_type, place_address):
 
     return "Интересное место, которое стоит посетить."
 
-
+def get_yandex_maps_link(address=None, longitude=None, latitude=None):
+    """
+    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
+    Если координаты не указаны, использует адрес.
+    """
+    if longitude is not None and latitude is not None:
+        # Используем точные координаты
+        return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
+    else:
+        # Fallback на адрес (менее точный)
+        clean_address = (address
+                         .replace("ул.", "улица")
+                         .replace("д.", "дом")
+                         .replace("корп.", "корпус")
+                         .strip())
+        encoded_address = urllib.parse.quote_plus(clean_address)
+        return f"https://yandex.ru/maps/?text={encoded_address}"
 def is_text_normal_yagpt(text):
     # Четкий промпт с требованием отвечать только "true" или "false"
     prompt = f"""
@@ -197,8 +200,6 @@ def is_text_normal_yagpt(text):
         return True
     else:
         return False
-
-
 def search_places_nominatim(latitude, longitude, place_type=None, radius=5):
     """Ищет места поблизости с помощью Nominatim (OpenStreetMap)"""
     try:
@@ -300,31 +301,36 @@ def create_fallback_data(latitude, longitude, keyword):
     }
 
 
-
 def create_place_card_by_db(place_id, index, total):
     """Создает карточку места для отображения"""
     with get_db_connection() as conn:
         properties = get_place_by_id(conn, place_id)
+
     name = properties.get('name', 'Неизвестное место')
     address = properties.get('address', 'Адрес не указан')
     description = properties.get('description', 'Нет описания')
     coordinate_x = properties.get('coordinate_x')
     coordinate_y = properties.get('coordinate_y')
-    coordinates = (coordinate_x, coordinate_y)
-    yandex_maps_url = get_yandex_maps_link(address)
     category_name = properties.get('category_name', 'Нет категории')
+
+    # Используем координаты для более точного позиционирования
+    yandex_maps_url = get_yandex_maps_link(
+        address=address,
+        longitude=coordinate_x,
+        latitude=coordinate_y
+    )
 
     avg_rating = 0
     with get_db_connection() as conn:
         if get_place_rating(conn, place_id) is not None:
             avg_rating = round(float(get_place_rating(conn, place_id)), 1)
 
-    card_text = f"🏙️ *{name}*\n" #
+    card_text = f"🏙️ *{name}*\n"
     if avg_rating > 0:
-        card_text += f"⭐ *Оценка*: {avg_rating}\n" #
-    card_text += f"📍 *Адрес*: {address}\n" #
-    card_text += f"🔖 *Категория*: {category_name}\n" #
-    card_text += f"🧐 *Описание*: {description}\n" #
+        card_text += f"⭐ *Оценка*: {avg_rating}\n"
+    card_text += f"📍 *Адрес*: {address}\n"
+    card_text += f"🔖 *Категория*: {category_name}\n"
+    card_text += f"🧐 *Описание*: {description}\n"
     card_text += f"🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
     if total > 1:
         card_text += f"📍 Место {index + 1} из {total}"
