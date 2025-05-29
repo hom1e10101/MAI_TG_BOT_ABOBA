@@ -242,31 +242,36 @@ def create_fallback_data(latitude, longitude, keyword):
     }
 
 
-
 def create_place_card_by_db(place_id, index, total):
     """Создает карточку места для отображения"""
     with get_db_connection() as conn:
         properties = get_place_by_id(conn, place_id)
+
     name = properties.get('name', 'Неизвестное место')
     address = properties.get('address', 'Адрес не указан')
     description = properties.get('description', 'Нет описания')
     coordinate_x = properties.get('coordinate_x')
     coordinate_y = properties.get('coordinate_y')
-    coordinates = (coordinate_x, coordinate_y)
-    yandex_maps_url = get_yandex_maps_link(address)
     category_name = properties.get('category_name', 'Нет категории')
+
+    # Используем координаты для более точного позиционирования
+    yandex_maps_url = get_yandex_maps_link(
+        address=address,
+        longitude=coordinate_x,
+        latitude=coordinate_y
+    )
 
     avg_rating = 0
     with get_db_connection() as conn:
         if get_place_rating(conn, place_id) is not None:
             avg_rating = round(float(get_place_rating(conn, place_id)), 1)
 
-    card_text = f"🏙️ *{name}*\n" #
+    card_text = f"🏙️ *{name}*\n"
     if avg_rating > 0:
-        card_text += f"⭐ *Оценка*: {avg_rating}\n" #
-    card_text += f"📍 *Адрес*: {address}\n" #
-    card_text += f"🔖 *Категория*: {category_name}\n" #
-    card_text += f"🧐 *Описание*: {description}\n" #
+        card_text += f"⭐ *Оценка*: {avg_rating}\n"
+    card_text += f"📍 *Адрес*: {address}\n"
+    card_text += f"🔖 *Категория*: {category_name}\n"
+    card_text += f"🧐 *Описание*: {description}\n"
     card_text += f"🌐 [Посмотреть на Яндекс.Картах]({yandex_maps_url})\n\n"
     if total > 1:
         card_text += f"📍 Место {index + 1} из {total}"

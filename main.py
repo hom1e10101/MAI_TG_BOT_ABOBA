@@ -3,6 +3,8 @@ import sys
 import telebot
 import os
 from telebot.storage import StateMemoryStorage
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 from funcs import start, help, place, user_settings, change_distance, v1
 from ya_ai_xd import handle_location, create_navigation_keyboard
 from settings_requests import get_db_connection, get_user_status, upd_user_status
@@ -21,21 +23,25 @@ state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 tb.remove_webhook()
 tb.send_message(419737412, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
-tb.send_message(1765684196, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
-tb.send_message(1458457789, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
+
+
+#tb.send_message(1765684196, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
+#tb.send_message(1458457789, "Бот запущен админом @flovvey36 (это сообщение видят лишь избранные)")
 
 
 @tb.message_handler(commands=['shutdown'])
 def stop(message):
     user_id = message.from_user.id
     if user_id in [419737412, 1765684196, 1458457789]:
-        tb.send_message(419737412, "Один из администраторов прервал работу бота с помощью /shutdown")
-        tb.send_message(1765684196, "Один из администраторов прервал работу бота с помощью /shutdown")
-        tb.send_message(1458457789, "Один из администраторов прервал работу бота с помощью /shutdown")
+        tb.send_message(419737412, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу бота с "
+                                   f"помощью /shutdown")
+        tb.send_message(1765684196, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу бота с "
+                                    f"помощью /shutdown")
+        tb.send_message(1458457789, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу бота с "
+                                    f"помощью /shutdown")
         tb.stop_polling()
     else:
         tb.send_message(user_id, "Недостаточно прав для выполнения задачи")
-
 
 
 @tb.message_handler(commands=["start"])
@@ -51,6 +57,24 @@ def help_handler(message):
 @tb.message_handler(commands=["settings"])
 def settings_handler(message):
     user_settings(message)
+
+
+@tb.message_handler(commands=["promote"])
+def promotion(message):
+    tb.send_message(message.from_user.id, "Получил вашу заявку, в ближайшее время администраторы ее рассмотрят")
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 2
+    markup.add(InlineKeyboardButton("✔️", callback_data="approve"),
+               InlineKeyboardButton("✖️", callback_data="decline"))
+    tb.send_message(419737412,
+                    f"Пользователь @{message.from_user.username} с id: `{message.from_user.id}` запросил "
+                    f"повышение", parse_mode="MarkdownV2", reply_markup=markup)
+    tb.send_message(1765684196,
+                    f"Пользователь @{message.from_user.username} с id: `{message.from_user.id}` запросил повышение",
+                    parse_mode="MarkdownV2", reply_markup=markup)
+    tb.send_message(1458457789,
+                    f"Пользователь @{message.from_user.username} с id: `{message.from_user.id}` запросил повышение",
+                    parse_mode="MarkdownV2", reply_markup=markup)
 
 
 @tb.message_handler()

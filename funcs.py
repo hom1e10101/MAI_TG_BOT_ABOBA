@@ -51,7 +51,7 @@ def help(message):
 
     # print(f"\tkek sent_massage is {prev_message}")
     tb.delete_message(user_id, message.message_id)
-    tb.edit_message_text("Напиши место, которое тебя интересует или напиши 'случайно', чтобы получить случайное место", chat_id=message.chat.id, message_id=prev_message)
+    tb.edit_message_text("Напиши место которое тебя интересует, в случае наличия вопросов, пиши @flovvey36", chat_id=message.chat.id, message_id=prev_message)
 
 def place(message):
     """Gets user"s request for place | Получает запрос пользователя на место"""
@@ -119,16 +119,18 @@ def operator(call):
 
 
 def change_distance(message):
-    """меняем дистанцию поиска мест"""
+    """Меняем дистанцию поиска мест"""
     if (message.text).isdigit():
         print(int(message.text))
         with get_db_connection() as conn:
             upd_user_distance(conn, message.from_user.id, (message.text))
+            tb.send_message(message.from_user.id, f"Твое новое расстояние поиска {message.text} км!")
     else:
         with get_db_connection() as conn:
             upd_user_city(conn, message.text)
     with get_db_connection() as conn:
         upd_user_status(conn, message.from_user.id,"start")
+
 
 
 from commet_requests import edit_comment_rating
@@ -202,17 +204,23 @@ def set_comment(message):
     with get_db_connection() as conn:
         upd_user_status(conn, user_id, "start")
 
-def get_yandex_maps_link(address):
-    # Убираем лишние пробелы и кодируем только нужные символы
-    clean_address = (address
-                     .replace("ул.", "улица")
-                     .replace("д.", "дом")
-                     .replace("корп.", "корпус")
-                     .strip())
-
-    # Кодируем для URL (но не допускаем дублирование %20)
-    encoded_address = urllib.parse.quote_plus(clean_address)
-    return f"https://yandex.ru/maps/?text={encoded_address}"
+def get_yandex_maps_link(address=None, longitude=None, latitude=None):
+    """
+    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
+    Если координаты не указаны, использует адрес.
+    """
+    if longitude is not None and latitude is not None:
+        # Используем точные координаты
+        return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
+    else:
+        # Fallback на адрес (менее точный)
+        clean_address = (address
+                         .replace("ул.", "улица")
+                         .replace("д.", "дом")
+                         .replace("корп.", "корпус")
+                         .strip())
+        encoded_address = urllib.parse.quote_plus(clean_address)
+        return f"https://yandex.ru/maps/?text={encoded_address}"
 
 def v1(message):
     user_id = message.from_user.id
