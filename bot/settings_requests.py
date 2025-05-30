@@ -1,17 +1,17 @@
 import sqlite3
 from contextlib import contextmanager
-
 from secret import database
+
 
 @contextmanager
 def get_db_connection():
+    """Подключение бд"""
     connection = sqlite3.connect(database)
     connection.row_factory = sqlite3.Row
     try:
         yield connection
     finally:
         connection.close()
-
 
 
 def add_user_settings(connection: sqlite3.Connection, user_id):
@@ -24,7 +24,7 @@ def add_user_settings(connection: sqlite3.Connection, user_id):
         ''', (user_id,))
     connection.commit()
 
-# получаем id сообщения, которое редактирует бот
+
 def get_user_message_to_edit(connection: sqlite3.Connection, user_id):
     """Gets id of message that will be edited | Получает id сообщения, которое будет редактировать бот"""
     users = connection.cursor()
@@ -33,11 +33,11 @@ def get_user_message_to_edit(connection: sqlite3.Connection, user_id):
         FROM Settings
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
-# обновляем id сообщения, которое редактирует бот
+
 def upd_user_message_to_edit(connection: sqlite3.Connection, user_id, message_id):
     """Updates id of message that will be edited | Обновляет id сообщения, которое будет редактировать бот"""
     users = connection.cursor()
@@ -47,8 +47,6 @@ def upd_user_message_to_edit(connection: sqlite3.Connection, user_id, message_id
     connection.commit()
 
 
-
-# получаем city юзера
 def get_user_city(connection: sqlite3.Connection, user_id):
     """Gets city where user is searching | Получает город, в котором необходимо искать места"""
     users = connection.cursor()
@@ -57,11 +55,11 @@ def get_user_city(connection: sqlite3.Connection, user_id):
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
-# обновляем city юзера
+
 def upd_user_city(connection: sqlite3.Connection, user_id, city):
     """Updates city where user is searching | Обновляет город, в котором необходимо искать места"""
     users = connection.cursor()
@@ -71,7 +69,6 @@ def upd_user_city(connection: sqlite3.Connection, user_id, city):
     connection.commit()
 
 
-# получаем distance юзера
 def get_user_distance(connection: sqlite3.Connection, user_id):
     """Получаем желаемую дистанцию поиска"""
     users = connection.cursor()
@@ -80,11 +77,11 @@ def get_user_distance(connection: sqlite3.Connection, user_id):
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
-# обновляем city юзера
+
 def upd_user_distance(connection: sqlite3.Connection, user_id, distance):
     """Обновляем желаемую дистанцию поиска"""
     users = connection.cursor()
@@ -94,7 +91,6 @@ def upd_user_distance(connection: sqlite3.Connection, user_id, distance):
     connection.commit()
 
 
-# обновляем последний запрос юзера
 def upd_user_last_request(connection: sqlite3.Connection, user_id, last_request):
     """Обновляем последний запрос пользователя"""
     cursor = connection.cursor()
@@ -104,7 +100,7 @@ def upd_user_last_request(connection: sqlite3.Connection, user_id, last_request)
     )
     connection.commit()
 
-# получаем последний запрос пользователя
+
 def get_user_last_request(connection: sqlite3.Connection, user_id):
     """Получаем последний запрос пользователя"""
     users = connection.cursor()
@@ -113,13 +109,11 @@ def get_user_last_request(connection: sqlite3.Connection, user_id):
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
 
-
-# обновляем последний запрос юзера
 def upd_user_status(connection: sqlite3.Connection, user_id, status):
     """Обновляем статус пользователя"""
     cursor = connection.cursor()
@@ -129,7 +123,7 @@ def upd_user_status(connection: sqlite3.Connection, user_id, status):
     )
     connection.commit()
 
-# получаем последний запрос пользователя
+
 def get_user_status(connection: sqlite3.Connection, user_id):
     """Получаем статус пользователя"""
     users = connection.cursor()
@@ -138,16 +132,15 @@ def get_user_status(connection: sqlite3.Connection, user_id):
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
 
-# обновляем индексы запроса юзера
 def upd_user_request_ids(connection: sqlite3.Connection, user_id, places_ids):
     """Обновляем запрашиваемые ids мест"""
     cursor = connection.cursor()
-    
+
     s = ' '.join(map(str, places_ids))
     cursor.execute(f"""
         UPDATE Settings
@@ -166,14 +159,14 @@ def get_user_request_ids(connection: sqlite3.Connection, user_id) -> list:
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     row = cursor.fetchone()
     if not row:
         return []
     ids = list(map(int, row[0].split()))
     return ids
 
-# получаем curr_ind
+
 def get_current_index(connection: sqlite3.Connection, user_id):
     """Получаем нынешний индекс"""
     users = connection.cursor()
@@ -182,11 +175,11 @@ def get_current_index(connection: sqlite3.Connection, user_id):
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
-# обновляем curr_ind
+
 def upd_current_index(connection: sqlite3.Connection, user_id, curr_ind):
     """Обновляем индекс"""
     users = connection.cursor()
@@ -196,11 +189,10 @@ def upd_current_index(connection: sqlite3.Connection, user_id, curr_ind):
     connection.commit()
 
 
-# обновляем индексы запроса юзера
 def upd_user_request_comment_ids(connection: sqlite3.Connection, user_id, comment_ids):
     """Обновляем индекс комментариев"""
     cursor = connection.cursor()
-    
+
     s = ' '.join(map(str, comment_ids))
     cursor.execute(f"""
         UPDATE Settings
@@ -219,14 +211,14 @@ def get_user_request_comment_ids(connection: sqlite3.Connection, user_id) -> lis
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     row = cursor.fetchone()
     if not row:
         return []
     ids = list(map(int, row[0].split()))
     return ids
 
-# получаем curr_ind
+
 def get_current_comment_index(connection: sqlite3.Connection, user_id):
     """Получаем индекс комментариев"""
     users = connection.cursor()
@@ -235,11 +227,11 @@ def get_current_comment_index(connection: sqlite3.Connection, user_id):
         FROM Settings 
         WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
-# обновляем curr_ind
+
 def upd_current_comment_index(connection: sqlite3.Connection, user_id, curr_ind):
     """Обновляем индекс комментариев"""
     users = connection.cursor()

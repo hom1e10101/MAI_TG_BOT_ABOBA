@@ -1,8 +1,6 @@
 import time
 import urllib
-
 import telebot
-import json
 import os
 import requests
 from geopy.geocoders import Nominatim
@@ -19,9 +17,8 @@ apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
 tb = telebot.TeleBot(apishka, state_storage=state_storage)
 
-# Инициализация геокодера Nominatim с правильными параметрами
 geolocator = Nominatim(
-    user_agent="TelegramPlacesBot/1.0 (https://t.me/New_places_fr_bot)",
+    user_agent='TelegramPlacesBot/1.0 (https://t.me/New_places_fr_bot)',
     timeout=10
 )
 
@@ -90,7 +87,8 @@ def classify_place_type(user_query):
 
 def generate_place_description(place_name, place_type, place_address):
     """Генерирует описание места с помощью YandexGPT"""
-    prompt = f"""Напиши краткое, но информативное описание для места "{place_name}" ({place_type}), расположенного по адресу: {place_address}.
+    prompt = f"""Напиши краткое, но информативное описание для места "{place_name}" ({place_type}), расположенного по 
+    адресу: {place_address}.
 
 Описание должно быть:
 1. Лаконичным (2-3 предложения)
@@ -98,8 +96,8 @@ def generate_place_description(place_name, place_type, place_address):
 3. Привлекательным для посетителей
 4. Содержать ключевые особенности места
 
-Пример хорошего описания:
-"Уютное кафе с авторской кухней и домашней атмосферой. Особенно популярны десерты собственного приготовления. Идеально подходит для встреч с друзьями и семейных обедов."
+Пример хорошего описания: "Уютное кафе с авторской кухней и домашней атмосферой. Особенно популярны десерты 
+собственного приготовления. Идеально подходит для встреч с друзьями и семейных обедов."
 
 Верни только само описание, без дополнительных комментариев."""
 
@@ -142,15 +140,10 @@ def generate_place_description(place_name, place_type, place_address):
 
 
 def get_yandex_maps_link(address=None, longitude=None, latitude=None):
-    """
-    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
-    Если координаты не указаны, использует адрес.
-    """
+    """Генерирует ссылку на Яндекс.Карты с приоритетом координат. Если координаты не указаны, использует адрес."""
     if longitude is not None and latitude is not None:
-        # Используем точные координаты
         return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
     else:
-        # Fallback на адрес (менее точный)
         clean_address = (address
                          .replace("ул.", "улица")
                          .replace("д.", "дом")
@@ -161,7 +154,7 @@ def get_yandex_maps_link(address=None, longitude=None, latitude=None):
 
 
 def is_text_normal_yagpt(text):
-    # Четкий промпт с требованием отвечать только "true" или "false"
+    """Автомод, проверяющий комментарий пользователя на нормативность"""
     prompt = f"""
     Содержит ли следующий текст ненормативную лексику любого рода, в том числе оскорбления, нацизм и тд, 
     (включая замаскированные варианты типа 'п1д0р', 'piдор')? 
@@ -179,8 +172,8 @@ def is_text_normal_yagpt(text):
         "modelUri": f"gpt://b1gaa9e1j7g69a60a8l3/yandexgpt",
         "completionOptions": {
             "stream": False,
-            "temperature": 0.1,  # Минимизируем случайные ответы
-            "maxTokens": 100  # Ограничиваем длину ответа
+            "temperature": 0.1,
+            "maxTokens": 100
         },
         "messages": [
             {
@@ -194,11 +187,10 @@ def is_text_normal_yagpt(text):
         ]
     }
 
-
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()
-    answer = ((response.json()["result"]["alternatives"][0]["message"]["text"].strip().lower()).split(' ')[-1]).split('.')[0]
-    # Преобразуем строковый ответ в boolean
+    answer = \
+        ((response.json()["result"]["alternatives"][0]["message"]["text"].strip().lower()).split(' ')[-1]).split('.')[0]
     if answer == "true":
         return True
     else:
@@ -249,7 +241,6 @@ def search_places_nominatim(latitude, longitude, place_type=None, radius=5):
             place_address = place.get('display_name', 'Адрес не указан')
             place_category = place.get('type', 'attraction')
 
-            # Генерируем описание с помощью YandexGPT
             description = generate_place_description(place_name, place_category, place_address)
 
             features.append({
@@ -257,7 +248,7 @@ def search_places_nominatim(latitude, longitude, place_type=None, radius=5):
                     "name": place_name,
                     "address": place_address,
                     "city": city,
-                    "description": description,  # Используем сгенерированное описание
+                    "description": description,
                     "CompanyMetaData": {
                         "Categories": [
                             {
@@ -318,7 +309,6 @@ def create_place_card_by_db(place_id, index, total):
     coordinate_y = properties.get('coordinate_y')
     category_name = properties.get('category_name', 'Нет категории')
 
-    # Используем координаты для более точного позиционирования
     yandex_maps_url = get_yandex_maps_link(
         address=address,
         longitude=coordinate_x,
@@ -358,11 +348,9 @@ def create_navigation_keyboard(current_index, total_places):
         row.append(InlineKeyboardButton("➡️", callback_data=f"next_{current_index}"))
     markup.row(*row)
 
-    row2 = []
-    row2.append(InlineKeyboardButton("Отзывы", callback_data=f"get_comm_{current_index}"))
+    row2 = [InlineKeyboardButton("Отзывы", callback_data=f"get_comm_{current_index}")]
     markup.row(*row2)
     return markup
-
 
 
 @tb.message_handler(content_types=['location'])
@@ -401,7 +389,6 @@ def handle_location(message):
         if places_result and places_result.get('features'):
             places = places_result['features'][:5]
 
-            # Сохраняем ID мест в базу данных
             places_ids = []
             with get_places_db_connection() as conn:
                 for i, place in enumerate(places):
@@ -417,12 +404,12 @@ def handle_location(message):
                         categories = company_metadata.get('Categories', [])
                         category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
 
-                        now_ind = add_place_to_base(conn, name, "", address, description, coordinates[0], coordinates[1], category_name, "")
+                        now_ind = add_place_to_base(conn, name, "", address, description, coordinates[0],
+                                                    coordinates[1], category_name, "")
                         places_ids.append(now_ind)
                     else:
                         now_ind = get_id_by_name_address(conn, name, "", address)
                         places_ids.append(now_ind)
-            # Сохраняем данные о местах для пользователя
             with get_db_connection() as conn:
                 upd_user_request_ids(conn, user_id, places_ids)
 
@@ -440,7 +427,8 @@ def handle_location(message):
             )
         else:
             tb.send_message(user_id,
-                            f"❌ Не удалось найти места поблизости по запросу '{user_request}'. Попробуйте другой запрос.")
+                            f'❌ Не удалось найти места поблизости по запросу \'{user_request}\'. Попробуйте другой '
+                            f'запрос.')
 
     except Exception as e:
         tb.send_message(user_id, f"❌ Произошла ошибка: {str(e)}. Пожалуйста, попробуйте еще раз.")

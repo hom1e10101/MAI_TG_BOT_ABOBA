@@ -1,10 +1,7 @@
-import sys
-
 import telebot
 import os
 from telebot.storage import StateMemoryStorage
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+from funcs import add_moder
 from funcs import start, help, place, user_settings, change_distance, v1
 from ya_ai_xd import handle_location, create_navigation_keyboard
 from settings_requests import get_db_connection, get_user_status, upd_user_status
@@ -12,11 +9,14 @@ from secret import tg_api
 from commet_requests import get_comment_by_comment_id
 from ya_ai_xd import create_place_card_by_db
 from places_requests import get_place_by_id
-from settings_requests import get_user_request_ids, get_current_index, upd_current_index, get_user_request_comment_ids, \
-    upd_current_comment_index, get_current_comment_index
+from settings_requests import get_user_request_ids, get_current_index, upd_current_index, \
+    get_user_request_comment_ids, upd_current_comment_index, get_current_comment_index
 from comments import create_comment_card, create_navigation_keyboard_for_comments, get_comments, \
     get_user_comments, create_navigation_keyboard_for_user_comments, print_place
 from funcs import set_comment, set_rating
+from commet_requests import delete_comment
+from users_requests import get_user_role
+from time import sleep
 
 apishka = os.environ.get("TELEGRAM_API_TOKEN", tg_api)
 state_storage = StateMemoryStorage()
@@ -29,13 +29,17 @@ tb.send_message(1458457789, "Бот запущен админом @flovvey36 (э
 
 @tb.message_handler(commands=['shutdown'])
 def stop(message):
+    """Аварийное завершение работы бота"""
     user_id = message.from_user.id
     if user_id in [419737412, 1765684196, 1458457789]:
-        tb.send_message(419737412, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу бота с "
+        tb.send_message(419737412, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу "
+                                   f"бота с"
                                    f"помощью /shutdown")
-        tb.send_message(1765684196, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу бота с "
+        tb.send_message(1765684196, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу "
+                                    f"бота с"
                                     f"помощью /shutdown")
-        tb.send_message(1458457789, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу бота с "
+        tb.send_message(1458457789, f"{message.from_user.first_name} (@{message.from_user.username}) прервал работу "
+                                    f"бота с"
                                     f"помощью /shutdown")
         tb.stop_polling()
     else:
@@ -44,21 +48,25 @@ def stop(message):
 
 @tb.message_handler(commands=["start"])
 def start_handler(message):
+    """Чистый запуск бота"""
     start(message)
 
 
 @tb.message_handler(commands=["help"])
 def help_handler(message):
+    """Помощь пользователю"""
     help(message)
 
 
 @tb.message_handler(commands=["settings"])
 def settings_handler(message):
+    """Настройки пользователя"""
     user_settings(message)
 
 
 @tb.message_handler(commands=["promote"])
 def promotion(message):
+    """Повышение роли пользователя"""
     tb.send_message(message.from_user.id, "Получил вашу заявку, в ближайшее время администраторы ее рассмотрят")
     tb.send_message(419737412,
                     f"Пользователь @{message.from_user.username} с id: `{message.from_user.id}` запросил "
@@ -72,18 +80,24 @@ def promotion(message):
 
 
 @tb.message_handler(commands=["add_moder"])
-def promotion(message):
+def add_moder_handler(message):
+    """Добавление модератора администратором"""
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id)
     with get_db_connection() as conn:
-        upd_user_status(conn, user_id, "add_moder")
-    tb.send_message(message.from_user.id, """Напиши username пользователя, которого хочешь повысить до модератора
-                                            в формате @username""")
+        if get_user_role(conn, user_id) in ["admin", "moderator"]:
+            upd_user_status(conn, user_id, "add_moder")
+            sent_message = tb.send_message(message.from_user.id, "Напиши username пользователя, "
+                "которого хочешь повысить до модератора в формате @username")
+        else:
+            sent_message = tb.send_message(message.from_user.id, "Ошибка: ты не администратор и не модератор")
+            sleep(1)
+            tb.delete_message(user_id, sent_message.id)
 
 
-from funcs import add_moder
 @tb.message_handler()
 def message_handler(message):
+    """Изменение состояния пользователя"""
     status = ""
     user_id = message.from_user.id
     with get_db_connection() as conn:
@@ -107,6 +121,7 @@ def message_handler(message):
 
 @tb.message_handler(content_types=["location"])
 def location_handler(message):
+    """Обработчик для поиска мест рядом"""
     handle_location(message)
 
 
@@ -115,9 +130,9 @@ def gab(message):
     v1(message)
 
 
-from commet_requests import delete_comment
 @tb.callback_query_handler()
 def handle_navigation(call):
+    """Обработка всех звонков инлайн кнопок"""
     if call.data.startswith(('prev_', 'next_', 'rate_', 'comment_', "back_", "get_comm_")):
         """Обрабатывает навигацию между местами"""
 
@@ -131,8 +146,7 @@ def handle_navigation(call):
                 places_ids = get_user_request_ids(conn, user_id)
 
             total_places = len(places_ids)
-            
-            # Определяем новую позицию
+
             if call.data.startswith('prev_'):
                 new_index = max(0, current_index - 1)
             elif call.data.startswith('next_'):
@@ -174,13 +188,11 @@ def handle_navigation(call):
             else:
                 return
 
-            # Обновляем текущий индекс
             with get_db_connection() as conn:
                 upd_current_index(conn, user_id, new_index)
 
             place_id = places_ids[new_index]
 
-            # Создаем новое сообщение
             card_text = create_place_card_by_db(place_id, new_index, total_places)
             markup = create_navigation_keyboard(new_index, total_places)
 
@@ -206,14 +218,13 @@ def handle_navigation(call):
 
             if call.data.startswith(('comm_next_u_', 'comm_prev_u_')):
                 current_index = int(call.data.split('_')[3])
-            else :
+            else:
                 current_index = int(call.data.split('_')[2])
             with get_db_connection() as conn:
                 comment_ids = get_user_request_comment_ids(conn, user_id)
 
             total_comments = len(comment_ids)
 
-            # Определяем новую позицию
             if call.data.startswith('comm_prev_'):
                 new_index = max(0, current_index - 1)
             elif call.data.startswith('comm_next_'):
@@ -223,13 +234,11 @@ def handle_navigation(call):
             else:
                 return
 
-            # Обновляем текущий индекс
             with get_db_connection() as conn:
                 upd_current_comment_index(conn, user_id, new_index)
 
             comment_id = comment_ids[new_index]
 
-            # Создаем новое сообщение
             card_text = create_comment_card(comment_id)
             if call.data.startswith(('comm_next_u_', 'comm_prev_u_', 'comm_back_')):
                 with get_db_connection() as conn:
@@ -238,7 +247,8 @@ def handle_navigation(call):
             else:
                 with get_db_connection() as conn:
                     comm_idx = get_current_index(conn, user_id)
-                markup = create_navigation_keyboard_for_comments(user_id, new_index, total_comments, comm_idx, comment_id)
+                markup = create_navigation_keyboard_for_comments(user_id, new_index, total_comments, comm_idx,
+                                                                 comment_id)
 
             tb.edit_message_text(
                 chat_id=chat_id,
@@ -258,14 +268,13 @@ def handle_navigation(call):
             user_id = call.from_user.id
             chat_id = call.message.chat.id
             message_id = call.message.message_id
-            
+
             comm_id = int(call.data.split('_')[1])
             with get_db_connection() as conn:
                 delete_comment(conn, comm_id)
             tb.answer_callback_query(call.id, "Коммент удален")
 
         except Exception as e:
-            # print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
     else:
         """Обрабатывает настройки"""
@@ -274,7 +283,6 @@ def handle_navigation(call):
             chat_id = call.message.chat.id
             message_id = call.message.message_id
 
-            # Определяем новую позицию
             if call.data.startswith('distance'):
                 with get_db_connection() as conn:
                     upd_user_status(conn, user_id, "distance")
@@ -289,7 +297,6 @@ def handle_navigation(call):
             else:
                 return
         except Exception as e:
-            # print(f"Error in handle_navigation: {e}")
             tb.answer_callback_query(call.id, "Произошла ошибка. Попробуйте снова.")
 
 
