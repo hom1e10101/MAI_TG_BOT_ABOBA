@@ -8,11 +8,11 @@ from commet_requests import commented_by_user
 from commet_requests import edit_comment_text
 from settings_requests import get_user_request_ids
 from ya_ai_xd import is_text_normal_yagpt
-from users_requests import get_db_connection, add_user_to_base, upd_user_role
+from users_requests import get_db_connection, add_user_to_base, upd_user_role, get_user_role
 from settings_requests import add_user_settings, get_user_message_to_edit, upd_user_message_to_edit, \
     upd_user_city, upd_user_distance, upd_user_last_request
 from settings_requests import upd_user_status, get_user_status
-from commet_requests import add_comment
+from commet_requests import add_comment, edit_comment_text_by_id, edit_comment_rating_by_id
 from secret import tg_api
 from users_requests import get_user_id_by_user_name
 
@@ -56,6 +56,14 @@ def help(message):
     tb.delete_message(user_id, message.message_id)
 
 
+def check_banned(user_id):
+    """проверка забанен ли юзер"""
+    with get_db_connection() as conn:
+        if (get_user_role(conn, user_id) == "banned"):
+            return True
+    return False
+
+
 def place(message):
     """Gets user"s request for place | Получает запрос пользователя на место"""
     user_id = message.from_user.id
@@ -94,7 +102,49 @@ def user_settings(message):
         upd_user_message_to_edit(conn, user_id, sent_message.id)
 
 
+def ban_user(message):
+    """баним пользователя"""
+    user_id = message.from_user.id
+    username = message.text[1:]
 
+    tb.delete_message(user_id, message.id - 1)
+    tb.delete_message(user_id, message.id)
+    with get_db_connection() as conn:
+        new_user_id = get_user_id_by_user_name(conn, username)
+    if new_user_id is not None:
+        sent_message = tb.send_message(user_id, "Юзер забанен")
+        with get_db_connection() as conn:
+            upd_user_role(conn, new_user_id, "banned")
+        tb.sent_message(new_user_id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
+                        "@hom1e101\n@flovvey36")
+    else:
+        sent_message = tb.send_message(user_id, "Ошибка: юзер с таким юзернеймом не найден")
+    with get_db_connection() as conn:
+        upd_user_status(conn, message.from_user.id, "start")
+    sleep(1)
+    tb.delete_message(user_id, sent_message.id)
+
+
+def unban_user(message):
+    """анбаним пользователя"""
+    user_id = message.from_user.id
+    username = message.text[1:]
+
+    tb.delete_message(user_id, message.id - 1)
+    tb.delete_message(user_id, message.id)
+    with get_db_connection() as conn:
+        new_user_id = get_user_id_by_user_name(conn, username)
+    if new_user_id is not None:
+        sent_message = tb.send_message(user_id, "Юзер разбанен")
+        with get_db_connection() as conn:
+            upd_user_role(conn, new_user_id, "user")
+        tb.send_message(new_user_id, "Вас убрали из черного списка")
+    else:
+        sent_message = tb.send_message(user_id, "Ошибка: юзер с таким юзернеймом не найден")
+    with get_db_connection() as conn:
+        upd_user_status(conn, message.from_user.id, "start")
+    sleep(1)
+    tb.delete_message(user_id, sent_message.id)
 
 
 def add_moder(message):
@@ -110,6 +160,7 @@ def add_moder(message):
         sent_message = tb.send_message(user_id, "Юзер повышен")
         with get_db_connection() as conn:
             upd_user_role(conn, new_user_id, "moderator")
+        tb.send_message(new_user_id, "Вас повысили до модератора")
     else:
         sent_message = tb.send_message(user_id, "Ошибка: юзер с таким юзернеймом не найден")
     with get_db_connection() as conn:
@@ -144,30 +195,35 @@ def set_rating(message):
     with get_db_connection() as conn:
         status = get_user_status(conn, user_id)
 
-    needed_place = int(status[-1]) - 1
+    needed_place = int(status.split('_')[-1]) - 1
 
-    with get_db_connection() as conn:
-        ids = get_user_request_ids(conn, user_id)
-    place_id = ids[needed_place]
+    if status.startswith("redact"):
+        place_id = -1
+        comment_id = int(status.split('_')[-1])
+    else:
+        with get_db_connection() as conn:
+            ids = get_user_request_ids(conn, user_id)
+        place_id = ids[needed_place]
 
     response = ""
     if message.text.isdigit() and 0 < int(message.text) <= 10:
         with get_db_connection() as conn:
-            if commented_by_user(conn, user_id, place_id):
-                edit_comment_rating(conn, user_id, place_id, int(message.text))
+            if place_id != -1:
+                if commented_by_user(conn, user_id, place_id):
+                    edit_comment_rating(conn, user_id, place_id, int(message.text))
+                else:
+                    add_comment(conn, user_id, place_id, "NULL", int(message.text))
             else:
-                add_comment(conn, user_id, place_id, "NULL", int(message.text))
+                edit_comment_rating_by_id(conn, comment_id, int(message.text))
+        sent_massage = tb.send_message(user_id,
+                                    f"твоя оценка учтена)")
+        sleep(1)
+        tb.delete_message(user_id, sent_massage.id)
     else:
         sent_massage = tb.send_message(user_id,
                                        f"поставьте оценку от 1 до 10, заново использовав кнопку")
         sleep(1.5)
         tb.delete_message(user_id, sent_massage.id)
-        return
-
-    sent_massage = tb.send_message(user_id,
-                                   f"твоя оценка учтена)")
-    sleep(1)
-    tb.delete_message(user_id, sent_massage.id)
 
     with get_db_connection() as conn:
         upd_user_status(conn, user_id, "start")
@@ -182,21 +238,32 @@ def set_comment(message):
     with get_db_connection() as conn:
         status = get_user_status(conn, user_id)
 
-    needed_place = int(status[-1]) - 1
+    needed_place = int(status.split('_')[-1]) - 1
+
 
     with get_db_connection() as conn:
-        ids = get_user_request_ids(conn, user_id)
-        place_id = ids[needed_place]
+        if status.startswith("redact"):
+            place_id = -1
+            comment_id = int(status.split('_')[-1])
+        else:
+            ids = get_user_request_ids(conn, user_id)
+            place_id = ids[needed_place]
         proverka = is_text_normal_yagpt(message.text)
         if proverka:
-            if commented_by_user(conn, user_id, place_id):
-                edit_comment_text(conn, user_id, place_id, message.text)
-                sent_message = (tb.send_message(message.from_user.id, 'Комментарий обновлен'))
-                sleep(1)
-                tb.delete_message(message.from_user.id, sent_message.id)
+            if place_id != -1:
+                if commented_by_user(conn, user_id, place_id):
+                    edit_comment_text(conn, user_id, place_id, message.text)
+                    sent_message = (tb.send_message(message.from_user.id, 'Комментарий обновлен'))
+                    sleep(1)
+                    tb.delete_message(message.from_user.id, sent_message.id)
+                else:
+                    add_comment(conn, user_id, place_id, message.text, 0)
+                    sent_message = (tb.send_message(message.from_user.id, 'Комментарий добавлен'))
+                    sleep(1)
+                    tb.delete_message(message.from_user.id, sent_message.id)
             else:
-                add_comment(conn, user_id, place_id, message.text, 0)
-                sent_message = (tb.send_message(message.from_user.id, 'Комментарий добавлен'))
+                edit_comment_text_by_id(conn, comment_id, message.text)
+                sent_message = (tb.send_message(message.from_user.id, 'Комментарий обновлен'))
                 sleep(1)
                 tb.delete_message(message.from_user.id, sent_message.id)
         else:
@@ -206,7 +273,6 @@ def set_comment(message):
             sleep(2)
             tb.delete_message(message.from_user.id, sent_message.id)
         upd_user_status(conn, user_id, "start")
-
 
 def v1(message):
     """Шутка"""

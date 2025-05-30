@@ -95,6 +95,28 @@ def edit_comment_text(connection: sqlite3.Connection, user_id, place_id, text):
     cursor.execute('UPDATE Comments SET text = ? WHERE comment_id = ?', (text, comm_id))
     connection.commit()
 
+
+
+def edit_comment_rating_by_id(connection: sqlite3.Connection, comment_id, rating):
+    """Edits comment | Редактирует рейтинг в комментарии"""
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT 1 FROM Comments WHERE comment_id = ?', (comment_id,))
+    comment_exists = cursor.fetchone() is not None
+    if comment_exists:
+        cursor.execute('UPDATE Comments SET rating = ? WHERE comment_id = ?', (rating, comment_id))
+        connection.commit()
+
+    
+def edit_comment_text_by_id(connection: sqlite3.Connection, comment_id, text):
+    """Edits comment | Редактирует текст комментария"""
+    cursor = connection.cursor()
+    cursor.execute('SELECT 1 FROM Comments WHERE comment_id = ?', (comment_id,))
+    comment_exists = cursor.fetchone() is not None
+    if comment_exists:
+        cursor.execute('UPDATE Comments SET text = ? WHERE comment_id = ?', (text, comment_id))
+        connection.commit()
+
 def get_comment_by_comment_id(connection: sqlite3.Connection, comment_id):
     """Получаем все данные о комментарии по его id"""
     cursor = connection.cursor()

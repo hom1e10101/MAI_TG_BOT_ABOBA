@@ -20,7 +20,7 @@ from places_requests import add_place_to_base, get_place_by_id, \
     place_in_base, get_places_db_connection, get_id_by_name_address, get_name_by_place_id
 from settings_requests import upd_user_request_ids
 from commet_requests import get_place_rating, get_comment_by_comment_id
-from users_requests import get_user_name_by_user_id
+from users_requests import get_user_name_by_user_id, get_user_user_name
 
 def create_navigation_keyboard_for_comments(user_id, current_index, total_comments, place_idx, comment_id):
     """Создает клавиатуру для навигации между комментариями"""
@@ -53,9 +53,14 @@ def create_comment_card(comment_id):
         comment = get_comment_by_comment_id(conn, comment_id)
         if comment is not None:
             user_name = get_user_name_by_user_id(conn, comment["user_id"])
+            user_id = comment["user_id"]
+            user_user_name = get_user_user_name(conn, user_id)
             place_name = get_name_by_place_id(conn, comment["place_id"])
             rating = comment["rating"]
-            text = f"Отзыв от: {user_name}\n"
+            if user_user_name is not None:
+                text = f"Отзыв от: @{user_user_name}\n"
+            else:
+                text = f"Отзыв от: {user_name}"
             text += f"На место: {place_name}\n"
             if (rating is not None and rating > 0):
                 text += f"Оценка: {rating}\n\n"
@@ -109,7 +114,13 @@ def create_navigation_keyboard_for_user_comments(current_index, total_comments, 
     
     if current_index < total_comments - 1:
         row.append(InlineKeyboardButton("➡️", callback_data=f"comm_next_u_{current_index}"))
+
     markup.row(*row)
+    row2 = []
+    if place_id != -1:
+        row2.append(InlineKeyboardButton("📝", callback_data=f"redact_text_{current_index}"))
+        row2.append(InlineKeyboardButton("⭐", callback_data=f"redact_rating_{current_index}"))
+        markup.row(*row2)
     return markup
 
 

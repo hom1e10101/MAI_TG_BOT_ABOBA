@@ -7,7 +7,8 @@ from geopy.geocoders import Nominatim
 from telebot.storage import StateMemoryStorage
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from users_requests import get_db_connection
-from settings_requests import get_user_message_to_edit, get_user_last_request, upd_user_request_ids, get_user_distance
+from settings_requests import get_user_message_to_edit, get_user_last_request, upd_user_request_ids, get_user_distance, \
+    upd_user_message_to_edit
 from secret import yandex_url, yandex_api, tg_api
 from places_requests import add_place_to_base, place_in_base, get_places_db_connection, get_id_by_name_address, \
     get_place_by_id
@@ -43,7 +44,11 @@ def classify_place_type(user_query):
 - library (библиотеки)
 - tourist_attraction (достопримечательности)
 - supermarket (супермаркеты)
-- cafe (кафе, кофейни)
+- cafe (кафе, закусочные, кофейни)
+- gas_station (заправочные станции)
+- club (клубы)
+- bar (бары)
+- gym (спортивные залы)
 
 Верни только одно ключевое слово типа места, без объяснений."""
 
@@ -432,8 +437,8 @@ def handle_location(message):
                             f'❌ Не удалось найти места поблизости по запросу \'{user_request}\'. Попробуйте другой '
                             f'запрос.')
             tb.delete_message(user_id, sent_message.id - 4)
-            sleep(2)
-            tb.delete_message(user_id, sent_message.id)
+            with get_db_connection() as conn:
+                upd_user_message_to_edit(conn, user_id, sent_message.id)
 
     except Exception as e:
         tb.send_message(user_id, f"❌ Произошла ошибка: {str(e)}. Пожалуйста, попробуйте еще раз.")
