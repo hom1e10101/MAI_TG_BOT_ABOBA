@@ -52,6 +52,6 @@ yandex_api = 'уникальный апи ключ получаемый в ян�
 
 ## Демонстрация нашего проекта:
 [Бот](https://t.me/New_places_fr_bot)ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ
-[Презентация](https://gamma.app/docs/Copy-of-Copy-of-NAS-run-0-v-kode-vqjh142f9d38e49)
+[Презентация](https://docs.google.com/presentation/d/1ghj36Nk9g4GOQpQQGlNKV6goC4h20Wu8bk1N6nlqaf4/edit?slide=id.p1#slide=id.p1)
 ## Платформы, где представлены наши результаты:
 <img src="https://github.com/user-attachments/assets/6b9f41e3-1749-46b2-be42-5e672eb6da24" width="220" height="230">ㅤㅤㅤㅤㅤ<img src="https://github.com/user-attachments/assets/26ea43e5-605e-46fa-bf08-c9007b8bbe03" width="220" height="230">
