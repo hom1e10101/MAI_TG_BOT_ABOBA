@@ -434,8 +434,9 @@ def handle_location(message):
             )
         else:
             sent_message = tb.send_message(user_id,
-                            f'❌ Не удалось найти места поблизости по запросу \'{user_request}\'. Попробуйте другой '
-                            f'запрос.')
+                                           f'❌ Не удалось найти места поблизости по запросу \'{user_request}\'. '
+                                           f'Попробуйте другой'
+                                           f'запрос.')
             tb.delete_message(user_id, sent_message.id - 4)
             with get_db_connection() as conn:
                 upd_user_message_to_edit(conn, user_id, sent_message.id)

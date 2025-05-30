@@ -57,9 +57,9 @@ def help(message):
 
 
 def check_banned(user_id):
-    """проверка забанен ли юзер"""
+    """Проверка забанен ли юзер"""
     with get_db_connection() as conn:
-        if (get_user_role(conn, user_id) == "banned"):
+        if get_user_role(conn, user_id) == "banned":
             return True
     return False
 
@@ -103,7 +103,7 @@ def user_settings(message):
 
 
 def ban_user(message):
-    """баним пользователя"""
+    """Баним пользователя"""
     user_id = message.from_user.id
     username = message.text[1:]
 
@@ -116,7 +116,7 @@ def ban_user(message):
         with get_db_connection() as conn:
             upd_user_role(conn, new_user_id, "banned")
         tb.sent_message(new_user_id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                     "@hom1e101\n@flovvey36")
     else:
         sent_message = tb.send_message(user_id, "Ошибка: юзер с таким юзернеймом не найден")
     with get_db_connection() as conn:
@@ -216,7 +216,7 @@ def set_rating(message):
             else:
                 edit_comment_rating_by_id(conn, comment_id, int(message.text))
         sent_massage = tb.send_message(user_id,
-                                    f"твоя оценка учтена)")
+                                       f"твоя оценка учтена)")
         sleep(1)
         tb.delete_message(user_id, sent_massage.id)
     else:
@@ -239,7 +239,6 @@ def set_comment(message):
         status = get_user_status(conn, user_id)
 
     needed_place = int(status.split('_')[-1]) - 1
-
 
     with get_db_connection() as conn:
         if status.startswith("redact"):
@@ -273,6 +272,7 @@ def set_comment(message):
             sleep(2)
             tb.delete_message(message.from_user.id, sent_message.id)
         upd_user_status(conn, user_id, "start")
+
 
 def v1(message):
     """Шутка"""

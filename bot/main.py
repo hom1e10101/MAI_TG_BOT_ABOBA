@@ -49,43 +49,43 @@ def stop(message):
 @tb.message_handler(commands=["start"])
 def start_handler(message):
     """Чистый запуск бота"""
-    if (check_banned(message.from_user.id) == False):
+    if not check_banned(message.from_user.id):
         start(message)
     else:
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
 
 
 @tb.message_handler(commands=["help"])
 def help_handler(message):
     """Помощь пользователю"""
-    if (check_banned(message.from_user.id) == False):
+    if not check_banned(message.from_user.id):
         help(message)
     else:
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
 
 
 @tb.message_handler(commands=["settings"])
 def settings_handler(message):
     """Настройки пользователя"""
-    if (check_banned(message.from_user.id) == False):
+    if not check_banned(message.from_user.id):
         user_settings(message)
     else:
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
-    
+                                              "@hom1e101\n@flovvey36")
 
 
 @tb.message_handler(commands=["promote"])
 def promotion(message):
     """Повышение роли пользователя"""
-    if (check_banned(message.from_user.id) == True):
+    if check_banned(message.from_user.id):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
         return
     tb.delete_message(message.from_user.id, message.id)
-    sent_message = tb.send_message(message.from_user.id, "Получил вашу заявку, в ближайшее время администраторы ее рассмотрят")
+    sent_message = tb.send_message(message.from_user.id,
+                                   "Получил вашу заявку, в ближайшее время администраторы ее рассмотрят")
     sleep(1.5)
     tb.delete_message(message.from_user.id, sent_message.id)
     tb.send_message(419737412,
@@ -104,14 +104,14 @@ def add_moder_handler(message):
     """Добавление модератора администратором"""
     if (check_banned(message.from_user.id) == True):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id)
     with get_db_connection() as conn:
         if get_user_role(conn, user_id) in ["admin", "moderator"]:
             upd_user_status(conn, user_id, "add_moder")
             sent_message = tb.send_message(message.from_user.id, "Напиши username пользователя, "
-                "которого хочешь повысить до модератора в формате @username")
+                                                                 "которого хочешь повысить до модератора в формате @username")
         else:
             sent_message = tb.send_message(message.from_user.id, "Ошибка: ты не администратор и не модератор")
             sleep(1)
@@ -121,16 +121,16 @@ def add_moder_handler(message):
 @tb.message_handler(commands=["ban_user"])
 def ban_user_handler(message):
     """удаление пользователя администратором"""
-    if (check_banned(message.from_user.id) == True):
+    if check_banned(message.from_user.id):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id)
     with get_db_connection() as conn:
         if get_user_role(conn, user_id) in ["admin", "moderator"]:
             upd_user_status(conn, user_id, "ban_user")
             sent_message = tb.send_message(message.from_user.id, "Напиши username пользователя, "
-                "которого забанить в формате: @username")
+                                                                 "которого забанить в формате: @username")
         else:
             sent_message = tb.send_message(message.from_user.id, "Ошибка: ты не администратор и не модератор")
             sleep(1)
@@ -140,16 +140,16 @@ def ban_user_handler(message):
 @tb.message_handler(commands=["unban_user"])
 def ban_user_handler(message):
     """разбан пользователя администратором"""
-    if (check_banned(message.from_user.id) == True):
+    if check_banned(message.from_user.id):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
     user_id = message.from_user.id
     tb.delete_message(user_id, message.id)
     with get_db_connection() as conn:
         if get_user_role(conn, user_id) in ["admin", "moderator"]:
             upd_user_status(conn, user_id, "unban_user")
             sent_message = tb.send_message(message.from_user.id, "Напиши username пользователя, "
-                "которого разбанить в формате: @username")
+                                                                 "которого разбанить в формате: @username")
         else:
             sent_message = tb.send_message(message.from_user.id, "Ошибка: ты не администратор и не модератор")
             sleep(1)
@@ -159,9 +159,9 @@ def ban_user_handler(message):
 @tb.message_handler()
 def message_handler(message):
     """Изменение состояния пользователя"""
-    if (check_banned(message.from_user.id) == True):
+    if check_banned(message.from_user.id):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
     status = ""
     user_id = message.from_user.id
     with get_db_connection() as conn:
@@ -190,26 +190,26 @@ def message_handler(message):
 @tb.message_handler(content_types=["location"])
 def location_handler(message):
     """Обработчик для поиска мест рядом"""
-    if (check_banned(message.from_user.id) == True):
+    if check_banned(message.from_user.id):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
     handle_location(message)
 
 
 @tb.message_handler(commands=['v1'])
 def gab(message):
-    if (check_banned(message.from_user.id) == True):
+    if check_banned(message.from_user.id):
         tb.sent_message(message.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                              "@hom1e101\n@flovvey36")
     v1(message)
 
 
 @tb.callback_query_handler()
 def handle_navigation(call):
     """Обработка всех звонков инлайн кнопок"""
-    if (check_banned(call.from_user.id) == True):
+    if check_banned(call.from_user.id):
         tb.sent_message(call.from_user.id, "Вас занесли в черный список, чтобы обжаловать решение пишите:\n"
-                        "@hom1e101\n@flovvey36")
+                                           "@hom1e101\n@flovvey36")
     if call.data.startswith(('prev_', 'next_', 'rate_', 'comment_', "back_", "get_comm_")):
         """Обрабатывает навигацию между местами"""
 
