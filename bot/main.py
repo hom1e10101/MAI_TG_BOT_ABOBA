@@ -67,7 +67,10 @@ def settings_handler(message):
 @tb.message_handler(commands=["promote"])
 def promotion(message):
     """Повышение роли пользователя"""
-    tb.send_message(message.from_user.id, "Получил вашу заявку, в ближайшее время администраторы ее рассмотрят")
+    tb.delete_message(message.from_user.id, message.id)
+    sent_message = tb.send_message(message.from_user.id, "Получил вашу заявку, в ближайшее время администраторы ее рассмотрят")
+    sleep(1.5)
+    tb.delete_message(message.from_user.id, sent_message.id)
     tb.send_message(419737412,
                     f"Пользователь @{message.from_user.username} с id: `{message.from_user.id}` запросил "
                     f"повышение", parse_mode="MarkdownV2")

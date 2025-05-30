@@ -70,14 +70,11 @@ def place(message):
     with get_db_connection() as conn:
         upd_user_last_request(conn, user_id, message.text)
 
-    if message.text == "случайно" or message.text == "Случайно":
-        tb.edit_message_text("не, чет не хочу пока", chat_id=message.chat.id, message_id=prev_message)
-    else:
-        tb.edit_message_text(f"Ищем места по запросу: {message.text}", chat_id=message.chat.id, message_id=prev_message)
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        button = KeyboardButton("Отправить геолокацию", request_location=True)
-        markup.add(button)
-        tb.send_message(user_id, "Пожалуйста, поделитесь своим местоположением:", reply_markup=markup)
+    tb.edit_message_text(f"Ищем места по запросу: {message.text}", chat_id=message.chat.id, message_id=prev_message)
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    button = KeyboardButton("Отправить геолокацию", request_location=True)
+    markup.add(button)
+    tb.send_message(user_id, "Пожалуйста, поделитесь своим местоположением:", reply_markup=markup)
 
 
 def user_settings(message):
@@ -162,8 +159,8 @@ def set_rating(message):
                 add_comment(conn, user_id, place_id, "NULL", int(message.text))
     else:
         sent_massage = tb.send_message(user_id,
-                                       f"поставьте оценку от 1 до 10")
-        sleep(1)
+                                       f"поставьте оценку от 1 до 10, заново использовав кнопку")
+        sleep(1.5)
         tb.delete_message(user_id, sent_massage.id)
         return
 
@@ -205,7 +202,7 @@ def set_comment(message):
         else:
             sent_message = (tb.send_message(message.from_user.id,
                                             "Грешник, твой комментарий содержит ненормативную лексику. Бог тобой не "
-                                            "доволен, переписывай"))
+                                            "доволен, переписывай, заново нажав кнопку"))
             sleep(2)
             tb.delete_message(message.from_user.id, sent_message.id)
         upd_user_status(conn, user_id, "start")

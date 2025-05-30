@@ -12,6 +12,7 @@ from secret import yandex_url, yandex_api, tg_api
 from places_requests import add_place_to_base, place_in_base, get_places_db_connection, get_id_by_name_address, \
     get_place_by_id
 from commet_requests import get_place_rating
+from time import sleep
 
 apishka = os.environ.get('TELEGRAM_API_TOKEN', tg_api)
 state_storage = StateMemoryStorage()
@@ -26,6 +27,7 @@ geolocator = Nominatim(
 def classify_place_type(user_query):
     """Определяет тип места с помощью YandexGPT"""
     prompt = f"""Определи тип места для запроса пользователя: "{user_query}".
+Если запрос "случайно" выбери случайную категорию.
 Выбери один наиболее подходящий тип из списка:
 - restaurant (рестораны, кафе, бары, фастфуд)
 - park (парки, скверы, места для прогулок)
@@ -426,9 +428,12 @@ def handle_location(message):
                 disable_web_page_preview=True
             )
         else:
-            tb.send_message(user_id,
+            sent_message = tb.send_message(user_id,
                             f'❌ Не удалось найти места поблизости по запросу \'{user_request}\'. Попробуйте другой '
                             f'запрос.')
+            tb.delete_message(user_id, sent_message.id - 4)
+            sleep(2)
+            tb.delete_message(user_id, sent_message.id)
 
     except Exception as e:
         tb.send_message(user_id, f"❌ Произошла ошибка: {str(e)}. Пожалуйста, попробуйте еще раз.")
