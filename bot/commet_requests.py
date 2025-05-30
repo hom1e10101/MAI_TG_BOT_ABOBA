@@ -5,6 +5,7 @@ from secret import database
 
 @contextmanager
 def get_db_connection():
+    """Подключение бд"""
     connection = sqlite3.connect(database)
     connection.row_factory = sqlite3.Row
     try:

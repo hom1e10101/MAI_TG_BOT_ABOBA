@@ -1,7 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
-
 from secret import database
+
 
 @contextmanager
 def get_db_connection():
@@ -11,6 +11,7 @@ def get_db_connection():
         yield connection
     finally:
         connection.close()
+
 
 # добавляем юзера в БД
 def add_user_to_base(connection: sqlite3.Connection, user_id, name, user_name):
@@ -23,6 +24,7 @@ def add_user_to_base(connection: sqlite3.Connection, user_id, name, user_name):
             ON CONFLICT(user_id) DO NOTHING;
         """, (user_id, name, user_name))
     connection.commit()
+
 
 # меняем имя в БД
 def upd_user_name(connection: sqlite3.Connection, user_id, name):
@@ -42,7 +44,7 @@ def get_user_role(connection: sqlite3.Connection, user_id):
             FROM Users 
             WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
 
@@ -76,9 +78,10 @@ def get_user_user_name(connection: sqlite3.Connection, user_id):
             FROM Users 
             WHERE user_id = ?
     """, (user_id,))
-    
+
     result = users.fetchone()
     return result[0] if result else None
+
 
 # меняем роль в БД
 def get_user_id_by_user_name(connection: sqlite3.Connection, user_name):

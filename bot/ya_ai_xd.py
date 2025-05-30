@@ -1,8 +1,6 @@
 import time
 import urllib
-
 import telebot
-import json
 import os
 import requests
 from geopy.geocoders import Nominatim
@@ -21,7 +19,7 @@ tb = telebot.TeleBot(apishka, state_storage=state_storage)
 
 # Инициализация геокодера Nominatim с правильными параметрами
 geolocator = Nominatim(
-    user_agent="TelegramPlacesBot/1.0 (https://t.me/New_places_fr_bot)",
+    user_agent='TelegramPlacesBot/1.0 (https://t.me/New_places_fr_bot)',
     timeout=10
 )
 
@@ -90,7 +88,8 @@ def classify_place_type(user_query):
 
 def generate_place_description(place_name, place_type, place_address):
     """Генерирует описание места с помощью YandexGPT"""
-    prompt = f"""Напиши краткое, но информативное описание для места "{place_name}" ({place_type}), расположенного по адресу: {place_address}.
+    prompt = f"""Напиши краткое, но информативное описание для места "{place_name}" ({place_type}), расположенного по 
+    адресу: {place_address}.
 
 Описание должно быть:
 1. Лаконичным (2-3 предложения)
@@ -98,8 +97,8 @@ def generate_place_description(place_name, place_type, place_address):
 3. Привлекательным для посетителей
 4. Содержать ключевые особенности места
 
-Пример хорошего описания:
-"Уютное кафе с авторской кухней и домашней атмосферой. Особенно популярны десерты собственного приготовления. Идеально подходит для встреч с друзьями и семейных обедов."
+Пример хорошего описания: "Уютное кафе с авторской кухней и домашней атмосферой. Особенно популярны десерты 
+собственного приготовления. Идеально подходит для встреч с друзьями и семейных обедов."
 
 Верни только само описание, без дополнительных комментариев."""
 
@@ -140,11 +139,9 @@ def generate_place_description(place_name, place_type, place_address):
 
     return "Интересное место, которое стоит посетить."
 
+
 def get_yandex_maps_link(address=None, longitude=None, latitude=None):
-    """
-    Генерирует ссылку на Яндекс.Карты с приоритетом координат.
-    Если координаты не указаны, использует адрес.
-    """
+    """Генерирует ссылку на Яндекс.Карты с приоритетом координат. Если координаты не указаны, использует адрес."""
     if longitude is not None and latitude is not None:
         # Используем точные координаты
         return f"https://yandex.ru/maps/?pt={longitude},{latitude}&z=17&l=map"
@@ -157,7 +154,10 @@ def get_yandex_maps_link(address=None, longitude=None, latitude=None):
                          .strip())
         encoded_address = urllib.parse.quote_plus(clean_address)
         return f"https://yandex.ru/maps/?text={encoded_address}"
+
+
 def is_text_normal_yagpt(text):
+    """Автомод, проверяющий комментарий пользователя на нормативность"""
     # Четкий промпт с требованием отвечать только "true" или "false"
     prompt = f"""
     Содержит ли следующий текст ненормативную лексику любого рода, в том числе оскорбления, нацизм и тд, 
@@ -191,15 +191,17 @@ def is_text_normal_yagpt(text):
         ]
     }
 
-
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()
-    answer = ((response.json()["result"]["alternatives"][0]["message"]["text"].strip().lower()).split(' ')[-1]).split('.')[0]
+    answer = \
+        ((response.json()["result"]["alternatives"][0]["message"]["text"].strip().lower()).split(' ')[-1]).split('.')[0]
     # Преобразуем строковый ответ в boolean
     if answer == "true":
         return True
     else:
         return False
+
+
 def search_places_nominatim(latitude, longitude, place_type=None, radius=5):
     """Ищет места поблизости с помощью Nominatim (OpenStreetMap)"""
     try:
@@ -353,11 +355,9 @@ def create_navigation_keyboard(current_index, total_places):
         row.append(InlineKeyboardButton("➡️", callback_data=f"next_{current_index}"))
     markup.row(*row)
 
-    row2 = []
-    row2.append(InlineKeyboardButton("Отзывы", callback_data=f"get_comm_{current_index}"))
+    row2 = [InlineKeyboardButton("Отзывы", callback_data=f"get_comm_{current_index}")]
     markup.row(*row2)
     return markup
-
 
 
 @tb.message_handler(content_types=['location'])
@@ -412,7 +412,8 @@ def handle_location(message):
                         categories = company_metadata.get('Categories', [])
                         category_name = categories[0].get('name', 'Нет категории') if categories else 'Нет категории'
 
-                        now_ind = add_place_to_base(conn, name, "", address, description, coordinates[0], coordinates[1], category_name, "")
+                        now_ind = add_place_to_base(conn, name, "", address, description, coordinates[0],
+                                                    coordinates[1], category_name, "")
                         places_ids.append(now_ind)
                     else:
                         now_ind = get_id_by_name_address(conn, name, "", address)
@@ -435,7 +436,8 @@ def handle_location(message):
             )
         else:
             tb.send_message(user_id,
-                            f"❌ Не удалось найти места поблизости по запросу '{user_request}'. Попробуйте другой запрос.")
+                            f'❌ Не удалось найти места поблизости по запросу \'{user_request}\'. Попробуйте другой '
+                            f'запрос.')
 
     except Exception as e:
         tb.send_message(user_id, f"❌ Произошла ошибка: {str(e)}. Пожалуйста, попробуйте еще раз.")
